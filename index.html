@@ -1,0 +1,527 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#17594D">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Midmar Trainer">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Midmar Mile Trainer</title>
+</head>
+<body>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;700&display=swap">
+<style>
+/* Layout: one narrow column, fixed bottom tab bar. Pool-deck whiteboard feel: condensed numerals for sets, a lane-rope divider, buoy orange as the single action colour. */
+:root {
+  --bg: #EDF1EE;
+  --surface: #FFFFFF;
+  --ink: #0F211C;
+  --muted: #566A63;
+  --line: #D3DCD7;
+  --water: #17594D;
+  --water-soft: #DCEBE6;
+  --buoy: #C2410C;
+  --on-buoy: #FFFFFF;
+  --f-display: 'Barlow Condensed', 'Arial Narrow', system-ui, sans-serif;
+  --f-body: 'Barlow', system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0A1512;
+    --surface: #11221D;
+    --ink: #E5EFEA;
+    --muted: #8DA39A;
+    --line: #223630;
+    --water: #66C7AD;
+    --water-soft: #17332C;
+    --buoy: #FF8A55;
+    --on-buoy: #1B0B03;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0A1512;
+  --surface: #11221D;
+  --ink: #E5EFEA;
+  --muted: #8DA39A;
+  --line: #223630;
+  --water: #66C7AD;
+  --water-soft: #17332C;
+  --buoy: #FF8A55;
+  --on-buoy: #1B0B03;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 400 16px/1.45 var(--f-body);
+  padding-inline: 16px;
+  padding-block: 12px 104px;
+  -webkit-text-size-adjust: 100%;
+}
+.wrap { max-width: 560px; margin-inline: auto; }
+h1, h2, h3, p { margin: 0; }
+button { font: inherit; color: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+button:focus-visible, input:focus-visible, a:focus-visible { outline: 3px solid var(--buoy); outline-offset: 2px; }
+b { font-weight: 600; }
+
+/* header */
+.top { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; padding-block: 8px 14px; }
+.eyebrow { font: 600 12px var(--f-body); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.count { font: 700 60px/.9 var(--f-display); margin-top: 6px; font-variant-numeric: tabular-nums; }
+.count small { font: 600 22px var(--f-display); color: var(--muted); letter-spacing: .02em; margin-left: 8px; }
+.topr { text-align: right; font: 600 14px var(--f-body); color: var(--muted); min-width: 0; }
+.rope {
+  height: 10px; margin-bottom: 18px;
+  background:
+    radial-gradient(circle at 5px 5px, var(--buoy) 3.5px, transparent 4px) 0 0 / 20px 10px repeat-x,
+    radial-gradient(circle at 15px 5px, var(--water) 3.5px, transparent 4px) 0 0 / 20px 10px repeat-x,
+    linear-gradient(var(--line), var(--line)) 0 50% / 100% 1px no-repeat;
+}
+
+/* week header */
+.wknav { display: grid; grid-template-columns: 48px 1fr 48px; align-items: center; gap: 8px; }
+.wkt { text-align: center; min-width: 0; }
+.phase { font: 600 12px var(--f-body); letter-spacing: .12em; text-transform: uppercase; color: var(--water); }
+.wkt h1 { font: 700 40px/1 var(--f-display); margin-top: 2px; }
+.wkt h1 span { font: 600 20px var(--f-display); color: var(--muted); }
+.step { width: 48px; height: 48px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); display: grid; place-items: center; color: var(--ink); }
+.step:disabled { opacity: .35; cursor: default; }
+.dates { margin-top: 12px; text-align: center; color: var(--muted); font-size: 14px; display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 8px; align-items: center; }
+.pill { display: inline-block; padding: 2px 10px; border-radius: 99px; background: var(--water-soft); color: var(--water); font: 600 12px var(--f-body); letter-spacing: .04em; }
+.focus { margin: 12px auto 0; text-align: center; max-width: 34ch; text-wrap: balance; font-size: 17px; }
+.seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 16px 0 18px; }
+.seg i { height: 6px; border-radius: 3px; background: var(--line); }
+.seg i.on { background: var(--water); }
+
+/* session card */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; margin-bottom: 14px; }
+.card.is-done { border-color: var(--water); }
+.sh { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.sh > div { min-width: 0; }
+.day { font: 600 12px var(--f-body); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.sh h2 { font: 700 26px/1.05 var(--f-display); margin-top: 4px; text-wrap: balance; }
+.m { text-align: right; font: 700 32px/1 var(--f-display); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.m small { display: block; font: 500 13px var(--f-body); color: var(--muted); margin-top: 3px; }
+.sets { list-style: none; margin: 14px 0 12px; padding: 0; border-top: 1px solid var(--line); }
+.sets li { display: grid; grid-template-columns: 62px 1fr; gap: 8px; align-items: baseline; padding: 9px 0; border-bottom: 1px solid var(--line); }
+.tag { font: 600 11px var(--f-body); letter-spacing: .14em; color: var(--muted); }
+.sets .main .tag { color: var(--buoy); }
+.what { min-width: 0; overflow-wrap: anywhere; }
+.what i { font-style: normal; color: var(--muted); margin-left: 8px; font-size: 14px; }
+.sets .main .what b { font: 700 28px/1 var(--f-display); letter-spacing: .01em; }
+.note { font-size: 14px; color: var(--muted); margin-bottom: 12px; }
+.tick { width: 100%; min-height: 48px; border-radius: 12px; border: 1.5px solid var(--buoy); background: var(--buoy); color: var(--on-buoy); font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.tick[aria-pressed="true"] { background: transparent; color: var(--water); border-color: var(--water); }
+.legend { font-size: 13px; color: var(--muted); padding-inline: 4px; }
+
+/* plan */
+.phasehead { margin: 8px 0 4px; }
+.phasehead h2 { font: 700 26px/1.1 var(--f-display); }
+.phasehead p { font-size: 14px; color: var(--muted); }
+.list { margin-bottom: 22px; border-top: 1px solid var(--line); }
+.weekrow { display: grid; grid-template-columns: 44px 1fr auto; gap: 12px; align-items: center; width: 100%; text-align: left; background: none; border: 0; border-bottom: 1px solid var(--line); padding: 12px 0; min-height: 60px; }
+.weekrow .n { font: 700 32px/1 var(--f-display); color: var(--water); text-align: center; }
+.weekrow .t { min-width: 0; }
+.weekrow .t b { display: block; font-size: 15px; }
+.weekrow .t span { display: block; font-size: 13px; color: var(--muted); }
+.weekrow .r { text-align: right; font: 600 13px var(--f-body); color: var(--muted); font-variant-numeric: tabular-nums; }
+.weekrow .r em { font-style: normal; display: block; color: var(--ink); font-size: 15px; }
+.weekrow.now .n::after { content: ""; display: block; width: 6px; height: 6px; border-radius: 50%; background: var(--buoy); margin: 4px auto 0; }
+
+/* progress */
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); padding: 0; overflow: hidden; }
+.stats > div { padding: 14px 12px; border-right: 1px solid var(--line); min-width: 0; }
+.stats > div:last-child { border-right: 0; }
+.stats .v { font: 700 34px/1 var(--f-display); font-variant-numeric: tabular-nums; }
+.stats .v small { font: 600 16px var(--f-display); color: var(--muted); }
+.stats .l { font-size: 12px; color: var(--muted); margin-top: 4px; letter-spacing: .04em; }
+.card h3 { font: 700 22px/1.1 var(--f-display); margin-bottom: 10px; }
+svg.chart { width: 100%; height: auto; display: block; }
+.grid { stroke: var(--line); stroke-width: 1; fill: none; }
+.ax { fill: var(--muted); font: 500 10.5px var(--f-body); }
+.goal { stroke: var(--buoy); stroke-width: 1.5; stroke-dasharray: 4 4; fill: none; }
+.goalt { fill: var(--buoy); font: 600 10.5px var(--f-body); }
+.ln { fill: none; stroke: var(--water); stroke-width: 2; }
+.pt { fill: var(--water); stroke: var(--surface); stroke-width: 2; }
+.pt.ow { fill: var(--buoy); }
+.key { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 13px; color: var(--muted); margin-top: 8px; }
+.key span::before { content: ""; display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: var(--water); margin-right: 6px; }
+.key span.o::before { background: var(--buoy); }
+.empty { font-size: 14px; color: var(--muted); margin-top: 8px; }
+.miles { list-style: none; margin: 0; padding: 0; }
+.miles li { display: grid; grid-template-columns: 28px 1fr auto; gap: 10px; align-items: center; padding: 10px 0; border-top: 1px solid var(--line); }
+.miles li:first-child { border-top: 0; }
+.dot { width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--line); display: grid; place-items: center; }
+.miles li.ok .dot { background: var(--water); border-color: var(--water); color: var(--surface); }
+.miles .w { font: 500 13px var(--f-body); color: var(--muted); text-align: right; }
+form.log { display: grid; gap: 12px; }
+.fld { display: grid; gap: 4px; }
+.fld label, .chk label { font: 600 13px var(--f-body); color: var(--muted); }
+.fld input[type=number], .fld input[type=date] { width: 100%; min-height: 48px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); padding: 0 12px; font: 500 18px var(--f-body); }
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.chk { display: flex; align-items: center; gap: 10px; min-height: 44px; }
+.chk input { width: 22px; height: 22px; accent-color: var(--buoy); }
+.chk label { font-size: 15px; color: var(--ink); font-weight: 500; }
+.err { color: var(--buoy); font-size: 14px; min-height: 0; }
+.entries { list-style: none; margin: 0; padding: 0; }
+.entries li { display: grid; grid-template-columns: 1fr auto auto; gap: 10px; align-items: center; padding: 8px 0; border-top: 1px solid var(--line); }
+.entries .md { font: 700 22px var(--f-display); font-variant-numeric: tabular-nums; }
+.entries .dd { font-size: 13px; color: var(--muted); }
+.entries .tg { font: 600 11px var(--f-body); letter-spacing: .08em; color: var(--buoy); text-transform: uppercase; }
+.rm { min-height: 40px; min-width: 40px; border: 0; background: none; color: var(--muted); border-radius: 8px; font-size: 13px; text-decoration: underline; }
+
+/* race */
+.tips { list-style: none; margin: 0; padding: 0; }
+.tips li { padding: 12px 0; border-top: 1px solid var(--line); }
+.tips li:first-child { border-top: 0; }
+.tips b { display: block; font: 700 20px/1.1 var(--f-display); margin-bottom: 2px; }
+.tips span { color: var(--muted); font-size: 15px; }
+.big { font: 700 44px/1 var(--f-display); }
+.cardp { color: var(--muted); margin-top: 6px; font-size: 15px; }
+.cardp a { color: var(--water); }
+
+/* tabs */
+.tabs { position: fixed; left: 0; right: 0; bottom: 0; background: var(--surface); border-top: 1px solid var(--line); padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px)); }
+.tabs .in { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; max-width: 560px; margin-inline: auto; }
+.tabs button { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; background: none; border: 0; color: var(--muted); font: 600 12px var(--f-body); min-height: 52px; border-radius: 10px; }
+.tabs button[aria-current="page"] { color: var(--water); background: var(--water-soft); }
+.ic { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; scroll-behavior: auto !important; } }
+@media (max-width: 360px) { .count { font-size: 52px; } .stats .v { font-size: 28px; } }
+</style>
+
+<div class="wrap">
+  <header class="top" id="hd"></header>
+  <div class="rope" aria-hidden="true"></div>
+  <main id="view"></main>
+</div>
+<nav class="tabs" aria-label="Sections"><div class="in">
+  <button data-act="tab" data-tab="week"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Week</button>
+  <button data-act="tab" data-tab="plan"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>Plan</button>
+  <button data-act="tab" data-tab="progress"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 20h18M6 16l4-5 4 3 5-8"/></svg>Progress</button>
+  <button data-act="tab" data-tab="race"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 21V4M5 4h11l-2 4 2 4H5"/></svg>Race</button>
+</div></nav>
+
+<script>
+(function () {
+  'use strict';
+  var DAY = 864e5, N = 19;
+  var KEY = 'midmar-trainer-v1';
+  var START = new Date(2026, 9, 5);   // Monday 5 Oct 2026, week 1
+  var RACE = new Date(2027, 1, 13);   // Saturday 13 Feb 2027
+  var MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  var DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  var OFF = [0, 2, 5]; // Mon, Wed, Sat
+
+  function num(n) { return String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ' '); }
+  function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function addDays(d, n) { return new Date(d.getFullYear(), d.getMonth(), d.getDate() + n); }
+  function today() { var n = new Date(); return new Date(n.getFullYear(), n.getMonth(), n.getDate()); }
+  function iso(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+  function parseISO(s) { var p = s.split('-').map(Number); return new Date(p[0], p[1] - 1, p[2]); }
+  function fmtS(d) { return d.getDate() + ' ' + MON[d.getMonth()]; }
+  function fmtD(d) { return DOW[d.getDay()] + ' ' + fmtS(d); }
+  function wsOf(w) { return addDays(START, w * 7); }
+
+  /* ---------- the plan ---------- */
+  function sess(title, o) {
+    o = Object.assign({ wu: 100, cd: 50, drill: false, main: [], cont: 0, note: '' }, o);
+    var lines = [{ tag: 'WU', txt: num(o.wu) + ' m easy' }];
+    var m = o.wu + o.cd;
+    if (o.drill) { lines.push({ tag: 'DRILL', txt: '4 × 25 m side-kick drill', sub: 'rest 15 s' }); m += 100; }
+    o.main.forEach(function (a) { lines.push({ tag: 'MAIN', n: a[0], d: a[1], rest: a[2], x: a[3] || '' }); m += a[0] * a[1]; });
+    if (o.cont) { lines.push({ tag: 'MAIN', cont: o.cont }); m += o.cont; }
+    lines.push({ tag: 'CD', txt: num(o.cd) + ' m easy' });
+    return { title: title, lines: lines, metres: m, note: o.note };
+  }
+  function T(main, o) { return sess('Breathing and technique', Object.assign({ drill: true, main: main }, o)); }
+  function I(main, o) { return sess('Intervals', Object.assign({ main: main }, o)); }
+  function L(x, o) { return sess((o && o.title) || 'Long swim', Object.assign(Array.isArray(x) ? { main: x } : { cont: x }, o)); }
+  var P2 = { wu: 200, cd: 100 };
+  function E(o) { return Object.assign({}, P2, o); }
+  var OW1 = 'First open-water swim. Swim 10 to 15 minutes easy with a buddy, close to the shore, then finish the distance in the pool.';
+  var OW = 'Do this one in open water, in a dam or the sea, with a buddy and close to the shore. Never swim alone. Use the pool if conditions are unsafe.';
+  var EASY = { title: 'Easy volume' };
+
+  var PLAN = [
+    { p: 0, f: 'Get comfortable. Short reps and relaxed breathing.', s: [T([[8, 50, 30]]), I([[6, 75, 30]]), L([[10, 50, 25]], EASY)] },
+    { p: 0, f: 'Same distances with shorter rests.', s: [T([[8, 50, 25]]), I([[5, 100, 40]]), L([[12, 50, 20]], EASY)] },
+    { p: 0, f: 'Longer reps, 75 to 100 m.', s: [T([[6, 75, 25]]), I([[6, 100, 40]]), L([[8, 75, 20]], EASY)] },
+    { p: 0, f: 'Check-in week. Lighter sets, then a 200 m non-stop test.', s: [T([[6, 75, 20]]), I([[4, 100, 30]]), L(200, { title: 'Test swim', note: 'Swim 200 m without stopping at an easy pace. Log how far you get on the Progress tab. Stopping early is fine, it shows where you are.' })] },
+    { p: 0, f: 'Step up to 150 m reps.', s: [T([[4, 100, 25]]), I([[5, 100, 30]]), L([[3, 150, 30]], EASY)] },
+    { p: 0, f: '200 m reps. Keep strokes long and smooth.', s: [T([[4, 100, 20]]), I([[4, 150, 30]]), L([[3, 200, 40]], EASY)] },
+    { p: 0, f: '250 m swims. Breathing should start to feel automatic.', s: [T([[3, 150, 20]]), I([[3, 200, 30]]), L([[2, 250, 40]], EASY)] },
+    { p: 0, f: 'Milestone week: 400 m non-stop.', s: [T([[3, 150, 20]]), I([[4, 200, 30]]), L(400, { title: 'Milestone swim', note: 'Swim 400 m without stopping. If you feel good at 400, keep going to 500. Log the result.' })] },
+
+    { p: 1, f: 'Build the long swim. 500 m non-stop.', s: [T([[3, 200, 20]], P2), I([[5, 200, 30]], P2), L(500, P2)] },
+    { p: 1, f: '600 m non-stop. Keep the breathing steady.', s: [T([[3, 200, 20]], P2), I([[6, 200, 30]], P2), L(600, P2)] },
+    { p: 1, f: '800 m non-stop. Start open-water swims this week.', s: [T([[4, 150, 15]], P2), I([[6, 200, 25]], P2), L(800, E({ note: OW1 }))] },
+    { p: 1, f: 'Recovery week. Lower volume, same technique.', s: [T([[4, 150, 15]], P2), I([[5, 200, 30]], P2), L(700, P2)] },
+    { p: 1, f: '1 km non-stop. Second open-water swim.', s: [T([[3, 200, 15]], P2), I([[6, 200, 25]], P2), L(1000, E({ note: OW }))] },
+    { p: 1, f: '1.2 km. Practise looking forward every 6 to 8 strokes.', s: [T([[4, 200, 15]], P2), I([[4, 300, 30]], P2), L(1200, E({ note: OW + ' Practise sighting: lift your eyes, find a landmark, then breathe.' }))] },
+    { p: 1, f: '1.5 km, close to race distance.', s: [T([[4, 200, 15]], P2), I([[5, 300, 30]], P2), L(1500, E({ note: OW }))] },
+    { p: 1, f: 'Recovery week. Lower volume.', s: [T([[3, 200, 15]], P2), I([[4, 300, 30]], P2), L(1200, P2)] },
+    { p: 1, f: 'Milestone week: 2 km non-stop.', s: [T([[4, 200, 15]], P2), I([[4, 400, 30]], P2), L(2000, E({ title: 'Milestone swim', note: '2 km is 400 m more than the race. Log it. Open water is better if you can.' }))] },
+
+    { p: 2, f: 'Taper. Less volume, same sharpness.', s: [T([[4, 100, 20]], P2), I([[4, 200, 30]], P2), L(1300, P2)] },
+    { p: 2, f: 'Race week. Stay loose and rest.', s: [
+      sess('Easy swim', { wu: 200, cd: 100, main: [[4, 50, 30, 'quick']] }),
+      sess('Shake-out', { wu: 200, cd: 100, main: [[4, 25, 30, 'fast']] }),
+      { title: 'Race day', race: true, metres: 1600, lines: [{ tag: 'RACE', txt: '1.6 km open water at Midmar Dam' }], note: 'The Midmar Mile runs on 13 and 14 February. Check your entry for the day and wave you swim, and tick this off then. Use the same goggles you trained in.' }
+    ] }
+  ];
+  var PH = [
+    { name: 'Base', range: 'Weeks 1 to 8', goal: 'Swim 400 m without stopping' },
+    { name: 'Endurance', range: 'Weeks 9 to 17', goal: 'Build to 2 km non-stop' },
+    { name: 'Taper', range: 'Weeks 18 and 19', goal: 'Rest up and race' }
+  ];
+  var MILES = [[400, 8], [800, 11], [1200, 14], [1600, 17], [2000, 17]];
+  var OW_GOAL = 4;
+  var TOTAL_SESS = PLAN.reduce(function (a, p) { return a + p.s.length; }, 0);
+
+  /* ---------- state ---------- */
+  function norm(j) {
+    var o = { done: {}, log: [] };
+    if (j && typeof j === 'object') {
+      if (j.done && typeof j.done === 'object') {
+        Object.keys(j.done).forEach(function (k) {
+          var m = /^(\d+)-(\d)$/.exec(k);
+          if (m && +m[1] < N && typeof j.done[k] === 'string') o.done[k] = j.done[k];
+        });
+      }
+      if (Array.isArray(j.log)) {
+        o.log = j.log.filter(function (e) { return e && typeof e.m === 'number' && typeof e.date === 'string' && typeof e.id === 'string'; })
+          .map(function (e) { return { id: e.id, date: e.date, m: e.m, ow: !!e.ow }; });
+      }
+    }
+    o.log.sort(function (a, b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : 0; });
+    return o;
+  }
+  var state;
+  try { state = norm(JSON.parse(localStorage.getItem(KEY) || 'null')); } catch (e) { state = norm(null); }
+  var tab = 'week';
+  function curWeek() { var t = today(); return Math.min(N - 1, Math.max(0, Math.floor(Math.round((t - START) / DAY) / 7))); }
+  var wk = curWeek();
+
+  var ref = null, timer = 0, chain = Promise.resolve();
+  function save() {
+    try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { /* storage blocked */ }
+    if (!ref) return;
+    clearTimeout(timer);
+    timer = setTimeout(function () {
+      var body = { v: 1, done: state.done, log: state.log };
+      chain = chain.then(function () { return ref.set(body); }).catch(function () { });
+    }, 500);
+  }
+  function initCloud() {
+    if (!window.claude || !window.claude.use) return;
+    Promise.all([window.claude.use('db'), window.claude.use('user')]).then(function (r) {
+      var db = r[0], user = r[1];
+      if (!db || !user) return;
+      return user.id().then(function (id) {
+        if (!id) return;
+        var doc = db.doc('data/users/' + id + '/progress');
+        return doc.get().then(function (snap) {
+          if (snap.exists) { state = norm(JSON.parse(JSON.stringify(snap.data()))); ref = doc; try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { } render(); }
+          else { ref = doc; if (Object.keys(state.done).length || state.log.length) save(); }
+        });
+      });
+    }).catch(function () { });
+  }
+
+  /* ---------- views ---------- */
+  var ICON_L = '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>';
+  var ICON_R = '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>';
+  var ICON_OK = '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true" style="width:16px;height:16px;stroke-width:3"><path d="M5 12l5 5 9-10"/></svg>';
+
+  function viewHeader() {
+    var t = today(), d = Math.round((RACE - t) / DAY), cw = curWeek();
+    var big = d > 0 ? num(d) : (d === 0 ? 'Today' : 'Done');
+    var unit = d > 0 ? (d === 1 ? 'day to go' : 'days to go') : (d === 0 ? 'is race day' : 'race complete');
+    var right = t < START ? 'Plan starts<br>' + fmtD(START) : 'Week ' + (cw + 1) + ' of ' + N;
+    return '<div><p class="eyebrow">Midmar Mile · 13 and 14 Feb 2027</p><p class="count">' + big + '<small>' + unit + '</small></p></div><p class="topr">' + right + '</p>';
+  }
+
+  function sessCard(s, i) {
+    var key = wk + '-' + i, dn = state.done[key], d = addDays(wsOf(wk), OFF[i]);
+    var rows = s.lines.map(function (l) {
+      if (l.tag === 'MAIN') {
+        var body = l.cont ? '<b>' + num(l.cont) + ' m non-stop</b><i>easy pace</i>'
+          : '<b>' + l.n + ' × ' + l.d + ' m</b><i>rest ' + l.rest + ' s' + (l.x ? ' · ' + esc(l.x) : '') + '</i>';
+        return '<li class="main"><span class="tag">MAIN</span><span class="what">' + body + '</span></li>';
+      }
+      if (l.tag === 'RACE') return '<li class="main"><span class="tag">RACE</span><span class="what"><b>' + esc(l.txt) + '</b></span></li>';
+      return '<li><span class="tag">' + l.tag + '</span><span class="what">' + esc(l.txt) + (l.sub ? '<i>' + esc(l.sub) + '</i>' : '') + '</span></li>';
+    }).join('');
+    return '<article class="card' + (dn ? ' is-done' : '') + '"><div class="sh"><div><p class="day">' + fmtD(d) + '</p><h2>' + esc(s.title) + '</h2></div>' +
+      '<p class="m">' + num(s.metres) + ' m<small>' + (s.metres / 25) + ' lengths</small></p></div>' +
+      '<ul class="sets">' + rows + '</ul>' + (s.note ? '<p class="note">' + esc(s.note) + '</p>' : '') +
+      '<button class="tick" data-act="toggle" data-key="' + key + '" aria-pressed="' + (dn ? 'true' : 'false') + '">' +
+      (dn ? ICON_OK + 'Done on ' + fmtS(parseISO(dn)) : 'Mark as done') + '</button></article>';
+  }
+
+  function viewWeek() {
+    var P = PLAN[wk], ws = wsOf(wk), we = addDays(ws, 6), t = today();
+    var when = t < ws ? 'Starts ' + fmtD(ws) : (t > we ? 'Past week' : 'This week');
+    var done = P.s.filter(function (s, i) { return state.done[wk + '-' + i]; }).length;
+    var tot = P.s.reduce(function (a, s) { return a + s.metres; }, 0);
+    var h = '<section><div class="wknav"><button class="step" data-act="prev" aria-label="Previous week"' + (wk === 0 ? ' disabled' : '') + '>' + ICON_L + '</button>' +
+      '<div class="wkt"><p class="phase">Phase ' + (P.p + 1) + ' · ' + PH[P.p].name + '</p><h1>Week ' + (wk + 1) + '<span> of ' + N + '</span></h1></div>' +
+      '<button class="step" data-act="next" aria-label="Next week"' + (wk === N - 1 ? ' disabled' : '') + '>' + ICON_R + '</button></div>' +
+      '<p class="dates"><span class="pill">' + when + '</span><span>' + fmtS(ws) + ' to ' + fmtS(we) + ' · ' + num(tot) + ' m planned</span></p>' +
+      '<p class="focus">' + esc(P.f) + '</p>' +
+      '<div class="seg" role="img" aria-label="' + done + ' of ' + P.s.length + ' swims done">' +
+      P.s.map(function (s, i) { return '<i class="' + (state.done[wk + '-' + i] ? 'on' : '') + '"></i>'; }).join('') + '</div></section>';
+    P.s.forEach(function (s, i) { h += sessCard(s, i); });
+    h += '<p class="legend">8 × 50 m means eight swims of 50 m. Rest is the pause between them. Lengths are for a 25 m pool. Swim easy and smooth unless a set says quick or fast.</p>';
+    return h;
+  }
+
+  function viewPlan() {
+    var cw = curWeek(), t = today(), h = '';
+    PH.forEach(function (ph, pi) {
+      h += '<section><div class="phasehead"><h2>Phase ' + (pi + 1) + ' · ' + ph.name + '</h2><p>' + ph.range + ' · ' + ph.goal + '</p></div><div class="list">';
+      PLAN.forEach(function (P, w) {
+        if (P.p !== pi) return;
+        var ws = wsOf(w), we = addDays(ws, 6);
+        var dn = P.s.filter(function (s, i) { return state.done[w + '-' + i]; }).length;
+        var tot = P.s.reduce(function (a, s) { return a + s.metres; }, 0);
+        h += '<button class="weekrow' + (w === cw && t >= START ? ' now' : '') + '" data-act="goto" data-w="' + w + '"><span class="n">' + (w + 1) + '</span>' +
+          '<span class="t"><b>' + fmtS(ws) + ' to ' + fmtS(we) + '</b><span>' + esc(P.f) + '</span></span>' +
+          '<span class="r"><em>' + dn + '/' + P.s.length + '</em>' + num(tot) + ' m</span></button>';
+      });
+      h += '</div></section>';
+    });
+    return h;
+  }
+
+  function chartSVG() {
+    var W = 360, H = 220, Lm = 42, Rm = 14, Tm = 14, Bm = 28, pw = W - Lm - Rm, ph = H - Tm - Bm;
+    var t0 = START.getTime(), t1 = RACE.getTime();
+    function X(t) { return Lm + pw * Math.min(1, Math.max(0, (t - t0) / (t1 - t0))); }
+    function Y(m) { return Tm + ph * (1 - Math.min(m, 2000) / 2000); }
+    var s = '<svg class="chart" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Longest non-stop swims over time, with the 1.6 km race distance marked">';
+    [0, 500, 1000, 1500, 2000].forEach(function (v) {
+      s += '<line class="grid" x1="' + Lm + '" x2="' + (W - Rm) + '" y1="' + Y(v) + '" y2="' + Y(v) + '"/><text class="ax" x="' + (Lm - 6) + '" y="' + (Y(v) + 3.5) + '" text-anchor="end">' + (v === 0 ? '0' : (v / 1000) + ' km') + '</text>';
+    });
+    [[START, 'Oct', 'start'], [new Date(2026, 10, 1), 'Nov', 'middle'], [new Date(2026, 11, 1), 'Dec', 'middle'], [new Date(2027, 0, 1), 'Jan', 'middle'], [new Date(2027, 1, 1), 'Feb', 'middle']].forEach(function (m) {
+      s += '<text class="ax" x="' + X(m[0].getTime()) + '" y="' + (H - 8) + '" text-anchor="' + m[2] + '">' + m[1] + '</text>';
+    });
+    s += '<line class="goal" x1="' + Lm + '" x2="' + (W - Rm) + '" y1="' + Y(1600) + '" y2="' + Y(1600) + '"/><text class="goalt" x="' + (W - Rm) + '" y="' + (Y(1600) - 5) + '" text-anchor="end">Race 1.6 km</text>';
+    var pts = state.log.map(function (e) { return { x: X(parseISO(e.date).getTime()), y: Y(e.m), ow: e.ow }; });
+    if (pts.length > 1) s += '<polyline class="ln" points="' + pts.map(function (p) { return p.x.toFixed(1) + ',' + p.y.toFixed(1); }).join(' ') + '"/>';
+    pts.forEach(function (p) { s += '<circle class="pt' + (p.ow ? ' ow' : '') + '" cx="' + p.x.toFixed(1) + '" cy="' + p.y.toFixed(1) + '" r="4.5"/>'; });
+    return s + '</svg>';
+  }
+
+  function viewProgress() {
+    var keys = Object.keys(state.done), done = keys.length;
+    var metres = keys.reduce(function (a, k) { var p = k.split('-'); var s = PLAN[+p[0]] && PLAN[+p[0]].s[+p[1]]; return a + (s ? s.metres : 0); }, 0);
+    var best = state.log.reduce(function (a, e) { return Math.max(a, e.m); }, 0);
+    var ow = state.log.filter(function (e) { return e.ow; }).length;
+    var h = '<section class="card stats"><div><p class="v">' + done + '<small>/' + TOTAL_SESS + '</small></p><p class="l">Swims done</p></div>' +
+      '<div><p class="v">' + num(metres) + '<small> m</small></p><p class="l">From the plan</p></div>' +
+      '<div><p class="v">' + (best ? num(best) + '<small> m</small>' : '–') + '</p><p class="l">Best non-stop</p></div></section>';
+    h += '<section class="card"><h3>Longest non-stop swims</h3>' + chartSVG() +
+      '<div class="key"><span>Pool</span><span class="o">Open water</span></div>' +
+      (state.log.length ? '' : '<p class="empty">Nothing logged yet. Add your first non-stop swim below and it appears here.</p>') + '</section>';
+    h += '<section class="card"><h3>Milestones</h3><ul class="miles">';
+    MILES.forEach(function (m) {
+      var ok = best >= m[0], by = addDays(wsOf(m[1] - 1), 6);
+      h += '<li class="' + (ok ? 'ok' : '') + '"><span class="dot">' + (ok ? ICON_OK : '') + '</span><span>' + num(m[0]) + ' m non-stop' + (m[0] === 1600 ? ' (race distance)' : '') + '</span><span class="w">By ' + fmtS(by) + '</span></li>';
+    });
+    h += '<li class="' + (ow >= OW_GOAL ? 'ok' : '') + '"><span class="dot">' + (ow >= OW_GOAL ? ICON_OK : '') + '</span><span>Open-water swims</span><span class="w">' + Math.min(ow, 99) + ' of ' + OW_GOAL + '</span></li></ul></section>';
+    h += '<section class="card"><h3>Log a non-stop swim</h3><form class="log" id="logForm" novalidate><div class="row2">' +
+      '<div class="fld"><label for="logM">Metres</label><input id="logM" type="number" inputmode="numeric" min="25" max="10000" step="25" placeholder="e.g. 400"></div>' +
+      '<div class="fld"><label for="logD">Date</label><input id="logD" type="date" value="' + iso(today()) + '" max="' + iso(today()) + '"></div></div>' +
+      '<div class="chk"><input id="logOW" type="checkbox"><label for="logOW">Swam in open water</label></div>' +
+      '<p class="err" id="logErr" role="alert"></p><button class="tick" type="submit">Add swim</button></form></section>';
+    if (state.log.length) {
+      h += '<section class="card"><h3>Logged swims</h3><ul class="entries">';
+      state.log.slice().reverse().slice(0, 12).forEach(function (e) {
+        h += '<li><span><span class="md">' + num(e.m) + ' m</span> <span class="dd">' + fmtD(parseISO(e.date)) + '</span></span><span class="tg">' + (e.ow ? 'Open water' : '') + '</span>' +
+          '<button class="rm" data-act="del" data-id="' + esc(e.id) + '" aria-label="Remove ' + num(e.m) + ' m swim">Remove</button></li>';
+      });
+      h += '</ul></section>';
+    }
+    return h;
+  }
+
+  function viewRace() {
+    var tips = [
+      ['Breathe both sides', 'Breathe every 3 strokes when you can. Exhale fully underwater so you are not holding your breath.'],
+      ['Sight the buoy', 'Every 6 to 8 strokes, lift your eyes forward, find the next buoy, then roll to breathe. Practise this in every open-water swim.'],
+      ['Start wide', 'Mass starts are rough. Start to the side or near the back and find clear water rather than fighting for the line.'],
+      ['If it gets hard', 'Roll onto your back and float until your breathing settles. Raise an arm if you need help.'],
+      ['Swim open water before race day', 'Aim for at least four swims in a dam or the sea, always with a buddy. Swimming straight without a wall takes practice.'],
+      ['Nothing new on the day', 'Use the same goggles and the same routine you trained with.']
+    ];
+    var h = '<section class="card"><p class="eyebrow">Race weekend</p><p class="big">13 and 14 February 2027</p>' +
+      '<p class="cardp">Midmar Dam, KwaZulu-Natal. The Mile is 1.6 km, which is 64 lengths of a 25 m pool. Check your entry confirmation for the day and wave you swim. Event details: <a href="https://midmarmile.com/" target="_blank" rel="noopener">midmarmile.com</a></p></section>';
+    h += '<section class="card"><h3>Race notes</h3><ul class="tips">' + tips.map(function (t) { return '<li><b>' + t[0] + '</b><span>' + t[1] + '</span></li>'; }).join('') + '</ul></section>';
+    h += '<p class="legend">If you have a heart or breathing condition, check with a doctor before you step up your training.</p>';
+    return h;
+  }
+
+  var VIEWS = { week: viewWeek, plan: viewPlan, progress: viewProgress, race: viewRace };
+  function render() {
+    document.getElementById('hd').innerHTML = viewHeader();
+    document.getElementById('view').innerHTML = VIEWS[tab]();
+    Array.prototype.forEach.call(document.querySelectorAll('.tabs button'), function (b) {
+      if (b.dataset.tab === tab) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
+    });
+  }
+  function top() { try { window.scrollTo(0, 0); } catch (e) { } }
+
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('[data-act]');
+    if (!b) return;
+    var a = b.dataset.act;
+    if (a === 'tab') { tab = b.dataset.tab; render(); top(); }
+    else if (a === 'prev') { if (wk > 0) { wk--; render(); top(); } }
+    else if (a === 'next') { if (wk < N - 1) { wk++; render(); top(); } }
+    else if (a === 'goto') { wk = +b.dataset.w; tab = 'week'; render(); top(); }
+    else if (a === 'toggle') {
+      var k = b.dataset.key;
+      if (state.done[k]) delete state.done[k]; else state.done[k] = iso(today());
+      save(); render();
+    }
+    else if (a === 'del') {
+      state.log = state.log.filter(function (x) { return x.id !== b.dataset.id; });
+      save(); render();
+    }
+  });
+  document.addEventListener('submit', function (e) {
+    if (!e.target || e.target.id !== 'logForm') return;
+    e.preventDefault();
+    var m = parseInt(document.getElementById('logM').value, 10);
+    var d = document.getElementById('logD').value;
+    var err = document.getElementById('logErr');
+    if (!(m >= 25 && m <= 10000)) { err.textContent = 'Enter the distance in metres, from 25 to 10 000.'; return; }
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(d) || d > iso(today())) { err.textContent = 'Pick today or an earlier date.'; return; }
+    state.log.push({ id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), date: d, m: m, ow: document.getElementById('logOW').checked });
+    state.log.sort(function (a, b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : 0; });
+    save(); render();
+  });
+
+  render();
+  initCloud();
+})();
+</script>
+
+<script>if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){})})}</script>
+</body>
+</html>
