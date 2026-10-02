@@ -13,9 +13,6 @@
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}img{max-width:100%}[hidden]{display:none!important}</style>
-<title>Midmar Mile Trainer</title>
-</head>
-<body>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -102,7 +99,7 @@ b { font-weight: 600; }
 .dates { margin-top: 12px; text-align: center; color: var(--muted); font-size: 14px; display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 8px; align-items: center; }
 .pill { display: inline-block; padding: 2px 10px; border-radius: 99px; background: var(--water-soft); color: var(--water); font: 600 12px var(--f-body); letter-spacing: .04em; }
 .focus { margin: 12px auto 0; text-align: center; max-width: 34ch; text-wrap: balance; font-size: 17px; }
-.seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 16px 0 18px; }
+.seg { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 6px; margin: 16px 0 18px; }
 .seg i { height: 6px; border-radius: 3px; background: var(--line); }
 .seg i.on { background: var(--water); }
 
@@ -169,19 +166,34 @@ svg.chart { width: 100%; height: auto; display: block; }
 .miles .w { font: 500 13px var(--f-body); color: var(--muted); text-align: right; }
 form.log { display: grid; gap: 12px; }
 .fld { display: grid; gap: 4px; }
-.fld label, .chk label { font: 600 13px var(--f-body); color: var(--muted); }
+.fld > label, .fld > .lab, .chk label { font: 600 13px var(--f-body); color: var(--muted); }
 .fld input[type=number], .fld input[type=date] { width: 100%; min-height: 48px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); padding: 0 12px; font: 500 18px var(--f-body); }
 .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .chk { display: flex; align-items: center; gap: 10px; min-height: 44px; }
 .chk input { width: 22px; height: 22px; accent-color: var(--buoy); }
 .chk label { font-size: 15px; color: var(--ink); font-weight: 500; }
-.err { color: var(--buoy); font-size: 14px; min-height: 0; }
+.err { color: var(--buoy); font-size: 14px; }
 .entries { list-style: none; margin: 0; padding: 0; }
 .entries li { display: grid; grid-template-columns: 1fr auto auto; gap: 10px; align-items: center; padding: 8px 0; border-top: 1px solid var(--line); }
 .entries .md { font: 700 22px var(--f-display); font-variant-numeric: tabular-nums; }
 .entries .dd { font-size: 13px; color: var(--muted); }
 .entries .tg { font: 600 11px var(--f-body); letter-spacing: .08em; color: var(--buoy); text-transform: uppercase; }
 .rm { min-height: 40px; min-width: 40px; border: 0; background: none; color: var(--muted); border-radius: 8px; font-size: 13px; text-decoration: underline; }
+
+/* setup */
+.setup { display: grid; gap: 18px; }
+.opts { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 8px; }
+.days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+.opt { position: relative; display: block; min-width: 0; }
+.opt input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+.opt span { display: flex; align-items: center; justify-content: center; min-height: 48px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); font-weight: 600; font-size: 15px; }
+.days .opt span { min-height: 44px; font-size: 13px; }
+.opt input:checked + span { background: var(--water-soft); border-color: var(--water); color: var(--water); }
+.opt input:focus-visible + span { outline: 3px solid var(--buoy); outline-offset: 2px; }
+.hint { font-size: 13px; color: var(--muted); }
+.sum { font-size: 15px; color: var(--muted); }
+.sum b { color: var(--ink); }
+.lnk { background: none; border: 0; color: var(--muted); text-decoration: underline; min-height: 44px; width: 100%; }
 
 /* race */
 .tips { list-style: none; margin: 0; padding: 0; }
@@ -195,8 +207,8 @@ form.log { display: grid; gap: 12px; }
 
 /* tabs */
 .tabs { position: fixed; left: 0; right: 0; bottom: 0; background: var(--surface); border-top: 1px solid var(--line); padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px)); }
-.tabs .in { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; max-width: 560px; margin-inline: auto; }
-.tabs button { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; background: none; border: 0; color: var(--muted); font: 600 12px var(--f-body); min-height: 52px; border-radius: 10px; }
+.tabs .in { display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; max-width: 560px; margin-inline: auto; }
+.tabs button { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; background: none; border: 0; color: var(--muted); font: 600 11.5px var(--f-body); min-height: 52px; border-radius: 10px; padding-inline: 2px; }
 .tabs button[aria-current="page"] { color: var(--water); background: var(--water-soft); }
 .ic { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; scroll-behavior: auto !important; } }
@@ -213,18 +225,20 @@ form.log { display: grid; gap: 12px; }
   <button data-act="tab" data-tab="plan"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>Plan</button>
   <button data-act="tab" data-tab="progress"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 20h18M6 16l4-5 4 3 5-8"/></svg>Progress</button>
   <button data-act="tab" data-tab="race"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 21V4M5 4h11l-2 4 2 4H5"/></svg>Race</button>
+  <button data-act="tab" data-tab="setup"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h9M18 6h3M3 12h3M12 12h9M3 18h11M20 18h1"/><circle cx="15" cy="6" r="2.5"/><circle cx="9" cy="12" r="2.5"/><circle cx="17" cy="18" r="2.5"/></svg>Setup</button>
 </div></nav>
 
 <script>
 (function () {
   'use strict';
-  var DAY = 864e5, N = 19;
-  var KEY = 'midmar-trainer-v1';
-  var START = new Date(2026, 9, 5);   // Monday 5 Oct 2026, week 1
-  var RACE = new Date(2027, 1, 13);   // Saturday 13 Feb 2027
+  var DAY = 864e5, PEAK = 2000, OW_GOAL = 4;
+  var KEY = 'midmar-trainer-v2';
+  var OLD_KEY = 'midmar-trainer-v1';
   var MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   var DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-  var OFF = [0, 2, 5]; // Mon, Wed, Sat
+  var DEF = { start: '2026-10-05', race: '2027-02-13', level: 200, perWeek: 3, days: [1, 3, 6], pool: 25 };
+  var PRESETS = { 2: [3, 6], 3: [1, 3, 6], 4: [1, 2, 4, 6] };
+  var ISO_RE = /^\d{4}-\d{2}-\d{2}$/;
 
   function num(n) { return String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ' '); }
   function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
@@ -232,74 +246,175 @@ form.log { display: grid; gap: 12px; }
   function today() { var n = new Date(); return new Date(n.getFullYear(), n.getMonth(), n.getDate()); }
   function iso(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
   function parseISO(s) { var p = s.split('-').map(Number); return new Date(p[0], p[1] - 1, p[2]); }
+  function mondayOf(d) { return addDays(d, -((d.getDay() + 6) % 7)); }
   function fmtS(d) { return d.getDate() + ' ' + MON[d.getMonth()]; }
   function fmtD(d) { return DOW[d.getDay()] + ' ' + fmtS(d); }
-  function wsOf(w) { return addDays(START, w * 7); }
+  function fmtY(d) { return fmtS(d) + ' ' + d.getFullYear(); }
+  function fmtDist(a) { return a >= 1000 ? (Math.round(a / 10) / 100) + ' km' : num(a) + ' m'; }
+  function weeksBetween(start, race) { return Math.floor(Math.round((race - start) / DAY) / 7); }
 
-  /* ---------- the plan ---------- */
-  function sess(title, o) {
-    o = Object.assign({ wu: 100, cd: 50, drill: false, main: [], cont: 0, note: '' }, o);
-    var lines = [{ tag: 'WU', txt: num(o.wu) + ' m easy' }];
-    var m = o.wu + o.cd;
-    if (o.drill) { lines.push({ tag: 'DRILL', txt: '4 × 25 m side-kick drill', sub: 'rest 15 s' }); m += 100; }
-    o.main.forEach(function (a) { lines.push({ tag: 'MAIN', n: a[0], d: a[1], rest: a[2], x: a[3] || '' }); m += a[0] * a[1]; });
-    if (o.cont) { lines.push({ tag: 'MAIN', cont: o.cont }); m += o.cont; }
-    lines.push({ tag: 'CD', txt: num(o.cd) + ' m easy' });
-    return { title: title, lines: lines, metres: m, note: o.note };
+  /* ---------- config ---------- */
+  function validRace(cfg) {
+    var rw = weeksBetween(mondayOf(parseISO(cfg.start)), parseISO(cfg.race));
+    return rw >= 5 && rw <= 39;
   }
-  function T(main, o) { return sess('Breathing and technique', Object.assign({ drill: true, main: main }, o)); }
-  function I(main, o) { return sess('Intervals', Object.assign({ main: main }, o)); }
-  function L(x, o) { return sess((o && o.title) || 'Long swim', Object.assign(Array.isArray(x) ? { main: x } : { cont: x }, o)); }
-  var P2 = { wu: 200, cd: 100 };
-  function E(o) { return Object.assign({}, P2, o); }
-  var OW1 = 'First open-water swim. Swim 10 to 15 minutes easy with a buddy, close to the shore, then finish the distance in the pool.';
-  var OW = 'Do this one in open water, in a dam or the sea, with a buddy and close to the shore. Never swim alone. Use the pool if conditions are unsafe.';
-  var EASY = { title: 'Easy volume' };
+  function normCfg(c) {
+    c = c && typeof c === 'object' ? c : {};
+    var o = {};
+    o.start = ISO_RE.test(c.start) ? c.start : DEF.start;
+    o.race = ISO_RE.test(c.race) ? c.race : DEF.race;
+    o.level = isFinite(c.level) ? Math.min(2000, Math.max(0, Math.round(c.level))) : DEF.level;
+    o.perWeek = [2, 3, 4].indexOf(c.perWeek) >= 0 ? c.perWeek : DEF.perWeek;
+    var dd = Array.isArray(c.days) ? c.days.filter(function (x, i, a) { return x >= 0 && x <= 6 && x % 1 === 0 && a.indexOf(x) === i; }) : [];
+    o.days = dd.length === o.perWeek ? dd.slice().sort(function (a, b) { return a - b; }) : PRESETS[o.perWeek].slice();
+    o.pool = c.pool === 50 ? 50 : 25;
+    if (!validRace(o)) { o.start = DEF.start; o.race = DEF.race; }
+    return o;
+  }
 
-  var PLAN = [
-    { p: 0, f: 'Get comfortable. Short reps and relaxed breathing.', s: [T([[8, 50, 30]]), I([[6, 75, 30]]), L([[10, 50, 25]], EASY)] },
-    { p: 0, f: 'Same distances with shorter rests.', s: [T([[8, 50, 25]]), I([[5, 100, 40]]), L([[12, 50, 20]], EASY)] },
-    { p: 0, f: 'Longer reps, 75 to 100 m.', s: [T([[6, 75, 25]]), I([[6, 100, 40]]), L([[8, 75, 20]], EASY)] },
-    { p: 0, f: 'Check-in week. Lighter sets, then a 200 m non-stop test.', s: [T([[6, 75, 20]]), I([[4, 100, 30]]), L(200, { title: 'Test swim', note: 'Swim 200 m without stopping at an easy pace. Log how far you get on the Progress tab. Stopping early is fine, it shows where you are.' })] },
-    { p: 0, f: 'Step up to 150 m reps.', s: [T([[4, 100, 25]]), I([[5, 100, 30]]), L([[3, 150, 30]], EASY)] },
-    { p: 0, f: '200 m reps. Keep strokes long and smooth.', s: [T([[4, 100, 20]]), I([[4, 150, 30]]), L([[3, 200, 40]], EASY)] },
-    { p: 0, f: '250 m swims. Breathing should start to feel automatic.', s: [T([[3, 150, 20]]), I([[3, 200, 30]]), L([[2, 250, 40]], EASY)] },
-    { p: 0, f: 'Milestone week: 400 m non-stop.', s: [T([[3, 150, 20]]), I([[4, 200, 30]]), L(400, { title: 'Milestone swim', note: 'Swim 400 m without stopping. If you feel good at 400, keep going to 500. Log the result.' })] },
+  /* ---------- plan generator ---------- */
+  function buildPlan(cfg) {
+    var pool = cfg.pool;
+    var start = mondayOf(parseISO(cfg.start)), race = parseISO(cfg.race);
+    var raceWeek = weeksBetween(start, race), W = raceWeek + 1, Tn = W - 2;
+    var raceOff = Math.round((race - addDays(start, raceWeek * 7)) / DAY);
+    var offs = cfg.days.map(function (d) { return (d + 6) % 7; }).sort(function (a, b) { return a - b; });
 
-    { p: 1, f: 'Build the long swim. 500 m non-stop.', s: [T([[3, 200, 20]], P2), I([[5, 200, 30]], P2), L(500, P2)] },
-    { p: 1, f: '600 m non-stop. Keep the breathing steady.', s: [T([[3, 200, 20]], P2), I([[6, 200, 30]], P2), L(600, P2)] },
-    { p: 1, f: '800 m non-stop. Start open-water swims this week.', s: [T([[4, 150, 15]], P2), I([[6, 200, 25]], P2), L(800, E({ note: OW1 }))] },
-    { p: 1, f: 'Recovery week. Lower volume, same technique.', s: [T([[4, 150, 15]], P2), I([[5, 200, 30]], P2), L(700, P2)] },
-    { p: 1, f: '1 km non-stop. Second open-water swim.', s: [T([[3, 200, 15]], P2), I([[6, 200, 25]], P2), L(1000, E({ note: OW }))] },
-    { p: 1, f: '1.2 km. Practise looking forward every 6 to 8 strokes.', s: [T([[4, 200, 15]], P2), I([[4, 300, 30]], P2), L(1200, E({ note: OW + ' Practise sighting: lift your eyes, find a landmark, then breathe.' }))] },
-    { p: 1, f: '1.5 km, close to race distance.', s: [T([[4, 200, 15]], P2), I([[5, 300, 30]], P2), L(1500, E({ note: OW }))] },
-    { p: 1, f: 'Recovery week. Lower volume.', s: [T([[3, 200, 15]], P2), I([[4, 300, 30]], P2), L(1200, P2)] },
-    { p: 1, f: 'Milestone week: 2 km non-stop.', s: [T([[4, 200, 15]], P2), I([[4, 400, 30]], P2), L(2000, E({ title: 'Milestone swim', note: '2 km is 400 m more than the race. Log it. Open water is better if you can.' }))] },
+    function stp(v) { return pool === 50 ? 50 : (v < 500 ? 25 : 50); }
+    function rnd(x, s) { return Math.max(s, Math.round(x / s) * s); }
+    function restFor(p) { return Math.max(15, Math.round((40 - 20 * p) / 5) * 5); }
+    function dist(x) {
+      var d = x < 150 ? 50 : x < 300 ? 75 : x < 500 ? 100 : x < 1400 ? 200 : x < 1800 ? 300 : 400;
+      return Math.max(pool, Math.ceil(d / pool) * pool);
+    }
+    function wc(a) { return a < 1000 ? { wu: 100, cd: 50 } : { wu: 200, cd: 100 }; }
+    function sess(title, o) {
+      o = Object.assign({ wu: 100, cd: 50, drill: false, main: [], cont: 0, note: '' }, o);
+      var lines = [{ tag: 'WU', txt: num(o.wu) + ' m easy' }], m = o.wu + o.cd;
+      if (o.drill) { lines.push({ tag: 'DRILL', txt: '4 × ' + pool + ' m side-kick drill', sub: 'rest 15 s' }); m += 4 * pool; }
+      o.main.forEach(function (a) { lines.push({ tag: 'MAIN', n: a[0], d: a[1], rest: a[2], x: a[3] || '' }); m += a[0] * a[1]; });
+      if (o.cont) { lines.push({ tag: 'MAIN', cont: o.cont }); m += o.cont; }
+      lines.push({ tag: 'CD', txt: num(o.cd) + ' m easy' });
+      return { title: title, lines: lines, metres: m, note: o.note };
+    }
+    function longSess(a, p, title, note) {
+      var w = wc(a);
+      if (a >= 400) return sess(title || 'Long swim', { wu: w.wu, cd: w.cd, cont: a, note: note });
+      var d = Math.max(pool, rnd(a * 0.5, pool)), n = Math.max(3, Math.ceil(a * 2.5 / d));
+      return sess('Easy volume', { wu: w.wu, cd: w.cd, main: [[n, d, restFor(p)]], note: note });
+    }
+    function intSess(a, p, drill) {
+      var w = wc(a), total = Math.min(1600, 1.2 * a + 300), d = dist(a);
+      return sess(drill ? 'Intervals and technique' : 'Intervals', { wu: w.wu, cd: w.cd, drill: drill, main: [[Math.max(2, Math.round(total / d)), d, restFor(p)]] });
+    }
+    function techSess(a, p) {
+      var w = wc(a), total = Math.min(800, 0.5 * a + 250), d = dist(a * 0.5);
+      return sess('Breathing and technique', { wu: w.wu, cd: w.cd, drill: true, main: [[Math.max(2, Math.round(total / d)), d, Math.max(15, restFor(p) - 5)]] });
+    }
 
-    { p: 2, f: 'Taper. Less volume, same sharpness.', s: [T([[4, 100, 20]], P2), I([[4, 200, 30]], P2), L(1300, P2)] },
-    { p: 2, f: 'Race week. Stay loose and rest.', s: [
-      sess('Easy swim', { wu: 200, cd: 100, main: [[4, 50, 30, 'quick']] }),
-      sess('Shake-out', { wu: 200, cd: 100, main: [[4, 25, 30, 'fast']] }),
-      { title: 'Race day', race: true, metres: 1600, lines: [{ tag: 'RACE', txt: '1.6 km open water at Midmar Dam' }], note: 'The Midmar Mile runs on 13 and 14 February. Check your entry for the day and wave you swim, and tick this off then. Use the same goggles you trained in.' }
-    ] }
-  ];
-  var PH = [
-    { name: 'Base', range: 'Weeks 1 to 8', goal: 'Swim 400 m without stopping' },
-    { name: 'Endurance', range: 'Weeks 9 to 17', goal: 'Build to 2 km non-stop' },
-    { name: 'Taper', range: 'Weeks 18 and 19', goal: 'Rest up and race' }
-  ];
-  var MILES = [[400, 8], [800, 11], [1200, 14], [1600, 17], [2000, 17]];
-  var OW_GOAL = 4;
-  var TOTAL_SESS = PLAN.reduce(function (a, p) { return a + p.s.length; }, 0);
+    /* long-swim ladder: geometric growth, a lighter week every 4th week */
+    var a0 = Math.max(100, cfg.level >= 400 ? cfg.level * 0.8 : cfg.level);
+    var a = [], rec = [], bv = [], t, prog;
+    for (t = 0; t < Tn; t++) {
+      prog = Tn > 1 ? t / (Tn - 1) : 1;
+      bv[t] = a0 * Math.pow(PEAK / a0, prog);
+      rec[t] = (t % 4 === 3 && t < Tn - 1);
+      var v = rec[t] ? bv[t] * 0.75 : bv[t];
+      a[t] = rnd(v, stp(v));
+    }
+    var m4 = -1;
+    if (cfg.level < 400) for (t = 0; t < Tn; t++) { if (!rec[t] && a[t] >= 400) { m4 = t; break; } }
+
+    /* open-water weeks, spread over the weeks where the long swim is 800 m or more */
+    var cand = [], owAt = {};
+    for (t = 0; t < Tn; t++) if (!rec[t] && a[t] >= 800) cand.push(t);
+    var picks = cand.length <= OW_GOAL ? cand.map(function (_, i) { return i; }) : [0, 1, 2, 3].map(function (i) { return Math.round(i * (cand.length - 1) / 3); });
+    picks.forEach(function (ci, i) { owAt[cand[ci]] = i; });
+    var OW1 = 'First open-water swim. Swim 10 to 15 minutes easy with a buddy, close to the shore, then finish the distance in the pool.';
+    var OW = 'Do this one in open water, in a dam or the sea, with a buddy and close to the shore. Never swim alone. Use the pool if conditions are unsafe.';
+    var SIGHT = ' Practise sighting: lift your eyes, find a landmark, then breathe.';
+
+    function lineup(av, p, title, note) {
+      var Ls = longSess(av, p, title, note);
+      if (cfg.perWeek === 2) return [intSess(av, p, av < 400), Ls];
+      if (cfg.perWeek === 3) return [techSess(av, p), intSess(av, p, false), Ls];
+      var ev = rnd(av * 0.6, stp(av * 0.6));
+      var Es = ev >= 400 ? longSess(ev, p, 'Easy volume') : longSess(ev, p);
+      return [techSess(av, p), intSess(av, p, false), Es, Ls];
+    }
+
+    var codes = [], weeks = [];
+    function phaseIdx(code) { var i = codes.indexOf(code); if (i < 0) { codes.push(code); i = codes.length - 1; } return i; }
+
+    for (t = 0; t < Tn; t++) {
+      prog = Tn > 1 ? t / (Tn - 1) : 1;
+      var title = null, note = '', f;
+      var code = bv[t] < 400 ? 'base' : 'end';
+      if (t === Tn - 1) { title = 'Milestone swim'; note = fmtDist(PEAK) + ' is ' + (PEAK - 1600) + ' m more than the race. Log it. Open water is better if you can.'; f = 'Milestone week: ' + fmtDist(PEAK) + ' non-stop.'; }
+      else if (t === m4) { title = 'Milestone swim'; note = 'Swim ' + num(a[t]) + ' m without stopping. If you feel good at the end, keep going a little further. Log the result.'; f = 'Milestone week: ' + num(a[t]) + ' m non-stop.'; }
+      else if (rec[t]) f = 'Recovery week. Lower volume, same technique.';
+      else if (a[t] < 400) f = 'Build with short reps. Focus on relaxed breathing.';
+      else f = fmtDist(a[t]) + ' non-stop.';
+      if (owAt[t] !== undefined) {
+        var on = owAt[t] === 0 ? OW1 : OW + (owAt[t] === 2 ? SIGHT : '');
+        note = note ? note + ' ' + on : on;
+        f += ' Open-water swim this week.';
+      }
+      var ss = lineup(a[t], prog, title, note);
+      weeks.push({ p: phaseIdx(code), f: f, rec: rec[t], s: ss });
+    }
+    /* taper week */
+    var at = rnd(PEAK * 0.65, stp(PEAK * 0.65));
+    weeks.push({ p: phaseIdx('taper'), f: 'Taper. Less volume, same sharpness.', rec: false, s: lineup(at, 1) });
+    /* race week */
+    var pre = offs.filter(function (o) { return o <= raceOff - 2; }).slice(-2);
+    var rs = [];
+    pre.forEach(function (o, i) {
+      rs.push(i === 0 && pre.length === 2
+        ? sess('Easy swim', { wu: 200, cd: 100, main: [[4, Math.max(50, pool), 30, 'quick']] })
+        : sess('Shake-out', { wu: 200, cd: 100, main: [[4, Math.max(25, pool), 30, 'fast']] }));
+    });
+    var raceS = { title: 'Race day', race: true, metres: 1600, lines: [{ tag: 'RACE', txt: '1.6 km open water at Midmar Dam' }], note: 'Check your entry confirmation for the day and wave you swim, and tick this off on that day. Use the same goggles you trained in.' };
+    weeks.push({ p: phaseIdx('taper'), f: 'Race week. Stay loose and rest.', rec: false, s: rs.concat([raceS]) });
+
+    /* dates */
+    weeks.forEach(function (wk, w) {
+      var ws = addDays(start, w * 7);
+      var days = (w === W - 1) ? pre.concat([raceOff]) : offs;
+      wk.s.forEach(function (s, i) { s.date = addDays(ws, days[i]); s.key = iso(s.date); });
+    });
+
+    /* phases */
+    var META = {
+      base: { name: 'Base', goal: 'Swim 400 m without stopping' },
+      end: { name: 'Endurance', goal: cfg.level >= 1600 ? 'Hold ' + fmtDist(PEAK) + ' non-stop and sharpen' : 'Build to ' + fmtDist(PEAK) + ' non-stop' },
+      taper: { name: 'Taper', goal: 'Rest up and race' }
+    };
+    var phases = codes.map(function (c, i) {
+      var first = -1, last = -1;
+      weeks.forEach(function (wk, w) { if (wk.p === i) { if (first < 0) first = w; last = w; } });
+      var r = first === last ? 'Week ' + (first + 1) : (last === first + 1 ? 'Weeks ' + (first + 1) + ' and ' + (last + 1) : 'Weeks ' + (first + 1) + ' to ' + (last + 1));
+      return { name: META[c].name, goal: META[c].goal, range: r };
+    });
+    var miles = [400, 800, 1200, 1600, 2000].map(function (m) {
+      var at2 = Tn - 1;
+      for (var k = 0; k < Tn; k++) if (!rec[k] && a[k] >= m) { at2 = k; break; }
+      return [m, k < Tn ? at2 : Tn - 1];
+    });
+    var total = weeks.reduce(function (x, wk) { return x + wk.s.length; }, 0);
+    return { cfg: cfg, pool: pool, start: start, race: race, N: W, weeks: weeks, phases: phases, miles: miles, total: total };
+  }
 
   /* ---------- state ---------- */
   function norm(j) {
-    var o = { done: {}, log: [] };
+    var o = { cfg: normCfg(j && j.cfg), done: {}, log: [] };
     if (j && typeof j === 'object') {
       if (j.done && typeof j.done === 'object') {
         Object.keys(j.done).forEach(function (k) {
-          var m = /^(\d+)-(\d)$/.exec(k);
-          if (m && +m[1] < N && typeof j.done[k] === 'string') o.done[k] = j.done[k];
+          if (typeof j.done[k] !== 'string') return;
+          if (ISO_RE.test(k)) { o.done[k] = j.done[k]; return; }
+          var m = /^(\d+)-(\d)$/.exec(k);   /* first version keyed sessions by week and slot */
+          if (m && +m[1] < 19) o.done[iso(addDays(parseISO(DEF.start), +m[1] * 7 + [0, 2, 5][+m[2]] ))] = j.done[k];
         });
       }
       if (Array.isArray(j.log)) {
@@ -307,14 +422,16 @@ form.log { display: grid; gap: 12px; }
           .map(function (e) { return { id: e.id, date: e.date, m: e.m, ow: !!e.ow }; });
       }
     }
-    o.log.sort(function (a, b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : 0; });
+    o.log.sort(function (x, y) { return x.date < y.date ? -1 : x.date > y.date ? 1 : 0; });
     return o;
   }
   var state;
-  try { state = norm(JSON.parse(localStorage.getItem(KEY) || 'null')); } catch (e) { state = norm(null); }
-  var tab = 'week';
-  function curWeek() { var t = today(); return Math.min(N - 1, Math.max(0, Math.floor(Math.round((t - START) / DAY) / 7))); }
+  try { state = norm(JSON.parse(localStorage.getItem(KEY) || localStorage.getItem(OLD_KEY) || 'null')); } catch (e) { state = norm(null); }
+  var PL = buildPlan(state.cfg);
+  var tab = 'week', draft = null;
+  function curWeek() { var t = today(); return Math.min(PL.N - 1, Math.max(0, Math.floor(Math.round((t - PL.start) / DAY) / 7))); }
   var wk = curWeek();
+  function wsOf(w) { return addDays(PL.start, w * 7); }
 
   var ref = null, timer = 0, chain = Promise.resolve();
   function save() {
@@ -322,7 +439,7 @@ form.log { display: grid; gap: 12px; }
     if (!ref) return;
     clearTimeout(timer);
     timer = setTimeout(function () {
-      var body = { v: 1, done: state.done, log: state.log };
+      var body = { v: 2, cfg: state.cfg, done: state.done, log: state.log };
       chain = chain.then(function () { return ref.set(body); }).catch(function () { });
     }, 500);
   }
@@ -335,8 +452,12 @@ form.log { display: grid; gap: 12px; }
         if (!id) return;
         var doc = db.doc('data/users/' + id + '/progress');
         return doc.get().then(function (snap) {
-          if (snap.exists) { state = norm(JSON.parse(JSON.stringify(snap.data()))); ref = doc; try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { } render(); }
-          else { ref = doc; if (Object.keys(state.done).length || state.log.length) save(); }
+          if (snap.exists) {
+            state = norm(JSON.parse(JSON.stringify(snap.data())));
+            PL = buildPlan(state.cfg); wk = curWeek(); ref = doc;
+            try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { }
+            render();
+          } else { ref = doc; save(); }
         });
       });
     }).catch(function () { });
@@ -348,15 +469,15 @@ form.log { display: grid; gap: 12px; }
   var ICON_OK = '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true" style="width:16px;height:16px;stroke-width:3"><path d="M5 12l5 5 9-10"/></svg>';
 
   function viewHeader() {
-    var t = today(), d = Math.round((RACE - t) / DAY), cw = curWeek();
+    var t = today(), d = Math.round((PL.race - t) / DAY), cw = curWeek();
     var big = d > 0 ? num(d) : (d === 0 ? 'Today' : 'Done');
     var unit = d > 0 ? (d === 1 ? 'day to go' : 'days to go') : (d === 0 ? 'is race day' : 'race complete');
-    var right = t < START ? 'Plan starts<br>' + fmtD(START) : 'Week ' + (cw + 1) + ' of ' + N;
-    return '<div><p class="eyebrow">Midmar Mile · 13 and 14 Feb 2027</p><p class="count">' + big + '<small>' + unit + '</small></p></div><p class="topr">' + right + '</p>';
+    var right = t < PL.start ? 'Plan starts<br>' + fmtD(PL.start) : 'Week ' + (cw + 1) + ' of ' + PL.N;
+    return '<div><p class="eyebrow">Midmar Mile · ' + fmtY(PL.race) + '</p><p class="count">' + big + '<small>' + unit + '</small></p></div><p class="topr">' + right + '</p>';
   }
 
-  function sessCard(s, i) {
-    var key = wk + '-' + i, dn = state.done[key], d = addDays(wsOf(wk), OFF[i]);
+  function sessCard(s) {
+    var dn = state.done[s.key];
     var rows = s.lines.map(function (l) {
       if (l.tag === 'MAIN') {
         var body = l.cont ? '<b>' + num(l.cont) + ' m non-stop</b><i>easy pace</i>'
@@ -366,40 +487,40 @@ form.log { display: grid; gap: 12px; }
       if (l.tag === 'RACE') return '<li class="main"><span class="tag">RACE</span><span class="what"><b>' + esc(l.txt) + '</b></span></li>';
       return '<li><span class="tag">' + l.tag + '</span><span class="what">' + esc(l.txt) + (l.sub ? '<i>' + esc(l.sub) + '</i>' : '') + '</span></li>';
     }).join('');
-    return '<article class="card' + (dn ? ' is-done' : '') + '"><div class="sh"><div><p class="day">' + fmtD(d) + '</p><h2>' + esc(s.title) + '</h2></div>' +
-      '<p class="m">' + num(s.metres) + ' m<small>' + (s.metres / 25) + ' lengths</small></p></div>' +
+    return '<article class="card' + (dn ? ' is-done' : '') + '"><div class="sh"><div><p class="day">' + fmtD(s.date) + '</p><h2>' + esc(s.title) + '</h2></div>' +
+      '<p class="m">' + num(s.metres) + ' m<small>' + (s.metres / PL.pool) + ' lengths</small></p></div>' +
       '<ul class="sets">' + rows + '</ul>' + (s.note ? '<p class="note">' + esc(s.note) + '</p>' : '') +
-      '<button class="tick" data-act="toggle" data-key="' + key + '" aria-pressed="' + (dn ? 'true' : 'false') + '">' +
+      '<button class="tick" data-act="toggle" data-key="' + s.key + '" aria-pressed="' + (dn ? 'true' : 'false') + '">' +
       (dn ? ICON_OK + 'Done on ' + fmtS(parseISO(dn)) : 'Mark as done') + '</button></article>';
   }
 
   function viewWeek() {
-    var P = PLAN[wk], ws = wsOf(wk), we = addDays(ws, 6), t = today();
+    var P = PL.weeks[wk], ws = wsOf(wk), we = addDays(ws, 6), t = today();
     var when = t < ws ? 'Starts ' + fmtD(ws) : (t > we ? 'Past week' : 'This week');
-    var done = P.s.filter(function (s, i) { return state.done[wk + '-' + i]; }).length;
-    var tot = P.s.reduce(function (a, s) { return a + s.metres; }, 0);
+    var done = P.s.filter(function (s) { return state.done[s.key]; }).length;
+    var tot = P.s.reduce(function (x, s) { return x + s.metres; }, 0);
     var h = '<section><div class="wknav"><button class="step" data-act="prev" aria-label="Previous week"' + (wk === 0 ? ' disabled' : '') + '>' + ICON_L + '</button>' +
-      '<div class="wkt"><p class="phase">Phase ' + (P.p + 1) + ' · ' + PH[P.p].name + '</p><h1>Week ' + (wk + 1) + '<span> of ' + N + '</span></h1></div>' +
-      '<button class="step" data-act="next" aria-label="Next week"' + (wk === N - 1 ? ' disabled' : '') + '>' + ICON_R + '</button></div>' +
+      '<div class="wkt"><p class="phase">Phase ' + (P.p + 1) + ' · ' + PL.phases[P.p].name + '</p><h1>Week ' + (wk + 1) + '<span> of ' + PL.N + '</span></h1></div>' +
+      '<button class="step" data-act="next" aria-label="Next week"' + (wk === PL.N - 1 ? ' disabled' : '') + '>' + ICON_R + '</button></div>' +
       '<p class="dates"><span class="pill">' + when + '</span><span>' + fmtS(ws) + ' to ' + fmtS(we) + ' · ' + num(tot) + ' m planned</span></p>' +
       '<p class="focus">' + esc(P.f) + '</p>' +
       '<div class="seg" role="img" aria-label="' + done + ' of ' + P.s.length + ' swims done">' +
-      P.s.map(function (s, i) { return '<i class="' + (state.done[wk + '-' + i] ? 'on' : '') + '"></i>'; }).join('') + '</div></section>';
-    P.s.forEach(function (s, i) { h += sessCard(s, i); });
-    h += '<p class="legend">8 × 50 m means eight swims of 50 m. Rest is the pause between them. Lengths are for a 25 m pool. Swim easy and smooth unless a set says quick or fast.</p>';
+      P.s.map(function (s) { return '<i class="' + (state.done[s.key] ? 'on' : '') + '"></i>'; }).join('') + '</div></section>';
+    P.s.forEach(function (s) { h += sessCard(s); });
+    h += '<p class="legend">8 × 50 m means eight swims of 50 m. Rest is the pause between them. Lengths are for a ' + PL.pool + ' m pool. Swim easy and smooth unless a set says quick or fast.</p>';
     return h;
   }
 
   function viewPlan() {
     var cw = curWeek(), t = today(), h = '';
-    PH.forEach(function (ph, pi) {
+    PL.phases.forEach(function (ph, pi) {
       h += '<section><div class="phasehead"><h2>Phase ' + (pi + 1) + ' · ' + ph.name + '</h2><p>' + ph.range + ' · ' + ph.goal + '</p></div><div class="list">';
-      PLAN.forEach(function (P, w) {
+      PL.weeks.forEach(function (P, w) {
         if (P.p !== pi) return;
         var ws = wsOf(w), we = addDays(ws, 6);
-        var dn = P.s.filter(function (s, i) { return state.done[w + '-' + i]; }).length;
-        var tot = P.s.reduce(function (a, s) { return a + s.metres; }, 0);
-        h += '<button class="weekrow' + (w === cw && t >= START ? ' now' : '') + '" data-act="goto" data-w="' + w + '"><span class="n">' + (w + 1) + '</span>' +
+        var dn = P.s.filter(function (s) { return state.done[s.key]; }).length;
+        var tot = P.s.reduce(function (x, s) { return x + s.metres; }, 0);
+        h += '<button class="weekrow' + (w === cw && t >= PL.start ? ' now' : '') + '" data-act="goto" data-w="' + w + '"><span class="n">' + (w + 1) + '</span>' +
           '<span class="t"><b>' + fmtS(ws) + ' to ' + fmtS(we) + '</b><span>' + esc(P.f) + '</span></span>' +
           '<span class="r"><em>' + dn + '/' + P.s.length + '</em>' + num(tot) + ' m</span></button>';
       });
@@ -410,16 +531,24 @@ form.log { display: grid; gap: 12px; }
 
   function chartSVG() {
     var W = 360, H = 220, Lm = 42, Rm = 14, Tm = 14, Bm = 28, pw = W - Lm - Rm, ph = H - Tm - Bm;
-    var t0 = START.getTime(), t1 = RACE.getTime();
+    var t0 = PL.start.getTime(), t1 = PL.race.getTime();
     function X(t) { return Lm + pw * Math.min(1, Math.max(0, (t - t0) / (t1 - t0))); }
     function Y(m) { return Tm + ph * (1 - Math.min(m, 2000) / 2000); }
     var s = '<svg class="chart" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Longest non-stop swims over time, with the 1.6 km race distance marked">';
     [0, 500, 1000, 1500, 2000].forEach(function (v) {
       s += '<line class="grid" x1="' + Lm + '" x2="' + (W - Rm) + '" y1="' + Y(v) + '" y2="' + Y(v) + '"/><text class="ax" x="' + (Lm - 6) + '" y="' + (Y(v) + 3.5) + '" text-anchor="end">' + (v === 0 ? '0' : (v / 1000) + ' km') + '</text>';
     });
-    [[START, 'Oct', 'start'], [new Date(2026, 10, 1), 'Nov', 'middle'], [new Date(2026, 11, 1), 'Dec', 'middle'], [new Date(2027, 0, 1), 'Jan', 'middle'], [new Date(2027, 1, 1), 'Feb', 'middle']].forEach(function (m) {
-      s += '<text class="ax" x="' + X(m[0].getTime()) + '" y="' + (H - 8) + '" text-anchor="' + m[2] + '">' + m[1] + '</text>';
-    });
+    var lastX = -99, mt = new Date(PL.start.getFullYear(), PL.start.getMonth() + 1, 1), first = true;
+    s += '<text class="ax" x="' + Lm + '" y="' + (H - 8) + '" text-anchor="start">' + MON[PL.start.getMonth()] + '</text>';
+    lastX = Lm + 14;
+    while (mt < PL.race) {
+      var mx = X(mt.getTime());
+      if (mx - lastX >= 26 && W - Rm - mx >= 12) {
+        s += '<text class="ax" x="' + mx + '" y="' + (H - 8) + '" text-anchor="middle">' + MON[mt.getMonth()] + '</text>';
+        lastX = mx;
+      }
+      mt = new Date(mt.getFullYear(), mt.getMonth() + 1, 1);
+    }
     s += '<line class="goal" x1="' + Lm + '" x2="' + (W - Rm) + '" y1="' + Y(1600) + '" y2="' + Y(1600) + '"/><text class="goalt" x="' + (W - Rm) + '" y="' + (Y(1600) - 5) + '" text-anchor="end">Race 1.6 km</text>';
     var pts = state.log.map(function (e) { return { x: X(parseISO(e.date).getTime()), y: Y(e.m), ow: e.ow }; });
     if (pts.length > 1) s += '<polyline class="ln" points="' + pts.map(function (p) { return p.x.toFixed(1) + ',' + p.y.toFixed(1); }).join(' ') + '"/>';
@@ -428,19 +557,19 @@ form.log { display: grid; gap: 12px; }
   }
 
   function viewProgress() {
-    var keys = Object.keys(state.done), done = keys.length;
-    var metres = keys.reduce(function (a, k) { var p = k.split('-'); var s = PLAN[+p[0]] && PLAN[+p[0]].s[+p[1]]; return a + (s ? s.metres : 0); }, 0);
-    var best = state.log.reduce(function (a, e) { return Math.max(a, e.m); }, 0);
+    var done = 0, metres = 0;
+    PL.weeks.forEach(function (P) { P.s.forEach(function (s) { if (state.done[s.key]) { done++; metres += s.metres; } }); });
+    var best = state.log.reduce(function (x, e) { return Math.max(x, e.m); }, 0);
     var ow = state.log.filter(function (e) { return e.ow; }).length;
-    var h = '<section class="card stats"><div><p class="v">' + done + '<small>/' + TOTAL_SESS + '</small></p><p class="l">Swims done</p></div>' +
+    var h = '<section class="card stats"><div><p class="v">' + done + '<small>/' + PL.total + '</small></p><p class="l">Swims done</p></div>' +
       '<div><p class="v">' + num(metres) + '<small> m</small></p><p class="l">From the plan</p></div>' +
       '<div><p class="v">' + (best ? num(best) + '<small> m</small>' : '–') + '</p><p class="l">Best non-stop</p></div></section>';
     h += '<section class="card"><h3>Longest non-stop swims</h3>' + chartSVG() +
       '<div class="key"><span>Pool</span><span class="o">Open water</span></div>' +
       (state.log.length ? '' : '<p class="empty">Nothing logged yet. Add your first non-stop swim below and it appears here.</p>') + '</section>';
     h += '<section class="card"><h3>Milestones</h3><ul class="miles">';
-    MILES.forEach(function (m) {
-      var ok = best >= m[0], by = addDays(wsOf(m[1] - 1), 6);
+    PL.miles.forEach(function (m) {
+      var ok = best >= m[0], by = addDays(wsOf(m[1]), 6);
       h += '<li class="' + (ok ? 'ok' : '') + '"><span class="dot">' + (ok ? ICON_OK : '') + '</span><span>' + num(m[0]) + ' m non-stop' + (m[0] === 1600 ? ' (race distance)' : '') + '</span><span class="w">By ' + fmtS(by) + '</span></li>';
     });
     h += '<li class="' + (ow >= OW_GOAL ? 'ok' : '') + '"><span class="dot">' + (ow >= OW_GOAL ? ICON_OK : '') + '</span><span>Open-water swims</span><span class="w">' + Math.min(ow, 99) + ' of ' + OW_GOAL + '</span></li></ul></section>';
@@ -469,14 +598,40 @@ form.log { display: grid; gap: 12px; }
       ['Swim open water before race day', 'Aim for at least four swims in a dam or the sea, always with a buddy. Swimming straight without a wall takes practice.'],
       ['Nothing new on the day', 'Use the same goggles and the same routine you trained with.']
     ];
-    var h = '<section class="card"><p class="eyebrow">Race weekend</p><p class="big">13 and 14 February 2027</p>' +
-      '<p class="cardp">Midmar Dam, KwaZulu-Natal. The Mile is 1.6 km, which is 64 lengths of a 25 m pool. Check your entry confirmation for the day and wave you swim. Event details: <a href="https://midmarmile.com/" target="_blank" rel="noopener">midmarmile.com</a></p></section>';
+    var h = '<section class="card"><p class="eyebrow">Race day in your plan</p><p class="big">' + fmtY(PL.race) + '</p>' +
+      '<p class="cardp">Midmar Dam, KwaZulu-Natal. The Mile is 1.6 km, which is ' + (1600 / PL.pool) + ' lengths of a ' + PL.pool + ' m pool. The 2027 event runs on 13 and 14 February, so check your entry confirmation for the day and wave you swim. Event details: <a href="https://midmarmile.com/" target="_blank" rel="noopener">midmarmile.com</a></p></section>';
     h += '<section class="card"><h3>Race notes</h3><ul class="tips">' + tips.map(function (t) { return '<li><b>' + t[0] + '</b><span>' + t[1] + '</span></li>'; }).join('') + '</ul></section>';
     h += '<p class="legend">If you have a heart or breathing condition, check with a doctor before you step up your training.</p>';
     return h;
   }
 
-  var VIEWS = { week: viewWeek, plan: viewPlan, progress: viewProgress, race: viewRace };
+  function viewSetup() {
+    var d = draft, order = [1, 2, 3, 4, 5, 6, 0];
+    function opt(type, name, val, label, checked, extra) {
+      return '<label class="opt"><input type="' + type + '" name="' + name + '" value="' + val + '"' + (checked ? ' checked' : '') + (extra || '') + '><span>' + label + '</span></label>';
+    }
+    var h = '<section class="card"><h3>Your plan now</h3><p class="sum"><b>' + PL.N + ' weeks</b> and <b>' + PL.total + ' swims</b>, ' + fmtD(PL.start) + ' to ' + fmtD(PL.race) + '. ' +
+      PL.cfg.perWeek + ' swims a week in a ' + PL.pool + ' m pool, starting from a ' + fmtDist(PL.cfg.level) + ' non-stop swim.</p></section>';
+    h += '<section class="card setup"><h3 style="margin:0">Change the plan</h3>' +
+      '<div class="fld"><label for="cfgLevel">Longest non-stop swim now (metres)</label><input id="cfgLevel" type="number" inputmode="numeric" min="0" max="2000" step="25" value="' + (isNaN(d.level) ? '' : d.level) + '"><p class="hint">Enter 0 if you cannot swim a full length yet. Your first long swim is set from this.</p></div>' +
+      '<div class="row2"><div class="fld"><label for="cfgStart">Plan starts</label><input id="cfgStart" type="date" value="' + esc(d.start) + '"></div>' +
+      '<div class="fld"><label for="cfgRace">Race day</label><input id="cfgRace" type="date" value="' + esc(d.race) + '"></div></div>' +
+      '<p class="hint">Weeks run Monday to Sunday. Plans can be 6 to 40 weeks long. To re-plan from today, set the start to this week and enter your current longest swim.</p>' +
+      '<div class="fld"><span class="lab">Swims per week</span><div class="opts" role="radiogroup" aria-label="Swims per week">' +
+      [2, 3, 4].map(function (n) { return opt('radio', 'perWeek', n, n, d.perWeek === n); }).join('') + '</div></div>' +
+      '<div class="fld"><span class="lab">Swim days (pick ' + d.perWeek + ')</span><div class="days">' +
+      order.map(function (n) { return opt('checkbox', 'day', n, DOW[n], d.days.indexOf(n) >= 0, ' data-day="' + n + '"'); }).join('') + '</div>' +
+      '<p class="hint">Your longest swim goes on your last day of the week. A weekend day suits it.</p></div>' +
+      '<div class="fld"><span class="lab">Pool length</span><div class="opts" role="radiogroup" aria-label="Pool length">' +
+      opt('radio', 'pool', 25, '25 m', d.pool === 25) + opt('radio', 'pool', 50, '50 m', d.pool === 50) + '</div></div>' +
+      '<p class="err" id="cfgErr" role="alert"></p>' +
+      '<button class="tick" data-act="apply">Update plan</button>' +
+      '<button class="lnk" data-act="reset">Reset to the original plan</button></section>';
+    h += '<p class="legend">Swims you have ticked stay ticked by date when the plan changes. Your logged swims are not affected.</p>';
+    return h;
+  }
+
+  var VIEWS = { week: viewWeek, plan: viewPlan, progress: viewProgress, race: viewRace, setup: viewSetup };
   function render() {
     document.getElementById('hd').innerHTML = viewHeader();
     document.getElementById('view').innerHTML = VIEWS[tab]();
@@ -485,14 +640,29 @@ form.log { display: grid; gap: 12px; }
     });
   }
   function top() { try { window.scrollTo(0, 0); } catch (e) { } }
+  function cloneCfg(c) { return { start: c.start, race: c.race, level: c.level, perWeek: c.perWeek, days: c.days.slice(), pool: c.pool }; }
+
+  function applyDraft() {
+    var d = draft, err = document.getElementById('cfgErr');
+    function fail(m) { err.textContent = m; }
+    if (!ISO_RE.test(d.start) || !ISO_RE.test(d.race)) return fail('Pick a start date and a race date.');
+    if (!(d.level >= 0 && d.level <= 2000)) return fail('Enter your longest non-stop swim in metres, from 0 to 2 000.');
+    if (!validRace(d)) return fail('Pick a race date between 6 and 40 weeks after the plan start.');
+    if (d.days.length !== d.perWeek) return fail('Pick ' + d.perWeek + ' swim days.');
+    state.cfg = normCfg(d);
+    PL = buildPlan(state.cfg);
+    wk = curWeek();
+    save();
+    tab = 'week'; render(); top();
+  }
 
   document.addEventListener('click', function (e) {
     var b = e.target.closest && e.target.closest('[data-act]');
     if (!b) return;
     var a = b.dataset.act;
-    if (a === 'tab') { tab = b.dataset.tab; render(); top(); }
+    if (a === 'tab') { tab = b.dataset.tab; if (tab === 'setup') draft = cloneCfg(state.cfg); render(); top(); }
     else if (a === 'prev') { if (wk > 0) { wk--; render(); top(); } }
-    else if (a === 'next') { if (wk < N - 1) { wk++; render(); top(); } }
+    else if (a === 'next') { if (wk < PL.N - 1) { wk++; render(); top(); } }
     else if (a === 'goto') { wk = +b.dataset.w; tab = 'week'; render(); top(); }
     else if (a === 'toggle') {
       var k = b.dataset.key;
@@ -503,6 +673,21 @@ form.log { display: grid; gap: 12px; }
       state.log = state.log.filter(function (x) { return x.id !== b.dataset.id; });
       save(); render();
     }
+    else if (a === 'apply') { applyDraft(); }
+    else if (a === 'reset') { draft = cloneCfg(DEF); render(); }
+  });
+  document.addEventListener('change', function (e) {
+    var t = e.target;
+    if (!t || tab !== 'setup' || !draft) return;
+    if (t.id === 'cfgLevel') draft.level = t.value === '' ? NaN : parseInt(t.value, 10);
+    else if (t.id === 'cfgStart') draft.start = t.value;
+    else if (t.id === 'cfgRace') draft.race = t.value;
+    else if (t.name === 'perWeek') { draft.perWeek = +t.value; draft.days = PRESETS[draft.perWeek].slice(); render(); }
+    else if (t.name === 'pool') draft.pool = +t.value === 50 ? 50 : 25;
+    else if (t.dataset && t.dataset.day !== undefined) {
+      var n = +t.dataset.day, i = draft.days.indexOf(n);
+      if (t.checked && i < 0) draft.days.push(n); else if (!t.checked && i >= 0) draft.days.splice(i, 1);
+    }
   });
   document.addEventListener('submit', function (e) {
     if (!e.target || e.target.id !== 'logForm') return;
@@ -511,9 +696,9 @@ form.log { display: grid; gap: 12px; }
     var d = document.getElementById('logD').value;
     var err = document.getElementById('logErr');
     if (!(m >= 25 && m <= 10000)) { err.textContent = 'Enter the distance in metres, from 25 to 10 000.'; return; }
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(d) || d > iso(today())) { err.textContent = 'Pick today or an earlier date.'; return; }
+    if (!ISO_RE.test(d) || d > iso(today())) { err.textContent = 'Pick today or an earlier date.'; return; }
     state.log.push({ id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), date: d, m: m, ow: document.getElementById('logOW').checked });
-    state.log.sort(function (a, b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : 0; });
+    state.log.sort(function (x, y) { return x.date < y.date ? -1 : x.date > y.date ? 1 : 0; });
     save(); render();
   });
 
