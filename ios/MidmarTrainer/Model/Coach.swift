@@ -65,16 +65,16 @@ enum Coach {
             return change(max(200, min(now, planned) * 0.7), 0.85,
                           "It's been \(s.gapDays) days since your last swim, so the next weeks ease back in.")
         }
-        if established && s.due >= 2 && s.completion < 0.5 {
-            return change(min(now, planned), 1,
-                          "Most swims in the last two weeks were missed, so next week repeats this week's long swim instead of building.")
-        }
         if s.recentFeel.filter({ $0 >= 4 }).count >= 2 {
             return change(planned * 0.9, 0.9, "Your last swims felt hard, so next week eases off by about 10%.")
         }
         if s.bestNonStop >= 200, Double(s.bestNonStop) >= planned * 1.1 {
             return change(Double(s.bestNonStop), 1,
                           "Your \(Fmt.num(s.bestNonStop)) m non-stop swim is ahead of the plan, so the long swim builds from there.")
+        }
+        if established && s.due >= 2 && s.completion < 0.5 {
+            return change(min(now, planned), 1,
+                          "Most swims in the last two weeks were missed, so next week repeats this week's long swim instead of building.")
         }
         if established, s.recentFeel.count >= 3, s.recentFeel.allSatisfy({ $0 <= 2 }), s.completion >= 0.8 {
             return change(planned * 1.08, 1, "Your swims have felt easy, so the plan builds a little faster.")

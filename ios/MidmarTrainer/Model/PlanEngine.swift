@@ -530,6 +530,8 @@ enum PlanEngine {
 
         var weeks: [DraftWeek] = []
         var bi = 0, ei = 0, si = 0
+        var fullMileDone = false
+        let mileWeek = (1..<max(1, tn - 1)).last { !rec[$0] && a[$0] >= 1000 } ?? -1
         for t in 0..<weeksIn {
             let prog = tn > 1 ? Double(t) / Double(tn - 1) : 1
             var title: String?
@@ -567,6 +569,9 @@ enum PlanEngine {
             } else {
                 q = enduranceQuality[ei % enduranceQuality.count]; ei += 1
                 if q == .pyramid && a[t] < 600 { q = .threshold }
+                // The full broken mile is the key race-specific set: make sure it comes round late in the build.
+                if t == mileWeek && !fullMileDone { q = .brokenMile }
+                if q == .brokenMile && a[t] >= 1000 { fullMileDone = true }
             }
             var k = (isBase ? baseSkills : enduranceSkills)[si % (isBase ? baseSkills.count : enduranceSkills.count)]
             si += 1
