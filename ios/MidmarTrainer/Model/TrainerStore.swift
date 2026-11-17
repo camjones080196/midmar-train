@@ -182,6 +182,17 @@ final class TrainerStore {
         }
     }
 
+    /// Replaces everything with data copied from the web app. Swim links from Health are kept,
+    /// so watch swims are not matched twice.
+    func importFromWeb(_ imported: TrainerState) {
+        update { st in
+            var n = imported
+            n.links = [:]
+            n.ignored = st.ignored.union(st.links.keys)
+            st = n
+        }
+    }
+
     func eraseAll() {
         update { st in st = TrainerState() }
         freshStart()

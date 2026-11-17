@@ -15,6 +15,7 @@ struct SetupView: View {
     @State private var error: String?
     @State private var saved = false
     @State private var confirmErase = false
+    @State private var showImport = false
 
     var body: some View {
         Form {
@@ -119,11 +120,15 @@ struct SetupView: View {
             }
 
             Section {
+                Button("Import from web app") { showImport = true }
                 Button("Erase all data", role: .destructive) { confirmErase = true }
+            } footer: {
+                Text("Import brings across your plan settings, ticks, skips, moves, edited swims and times from the web app.")
             }
         }
         .navigationTitle("Setup")
         .onAppear(perform: load)
+        .sheet(isPresented: $showImport, onDismiss: load) { WebImportSheet() }
         .confirmationDialog("Erase your plan, ticks and times?", isPresented: $confirmErase, titleVisibility: .visible) {
             Button("Erase all data", role: .destructive) { store.eraseAll(); load() }
         } message: {
@@ -166,5 +171,58 @@ struct SetupView: View {
         store.applyConfig(c, trial: trial)
         load()
         saved = true
+    }
+}
+
+struct WebImportSheet: View {
+    @Environment(TrainerStore.self) private var store
+    @Environment(\.dismiss) private var dismiss
+    @State private var text = ""
+    @State private var parsed: (TrainerState, WebImport.Summary)?
+    @State private var error: String?
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section {
+                    Text("In the web app, open Setup and tap Copy my data. Then paste it here.")
+                    Button("Paste") {
+                        if let s = UIPasteboard.general.string { text = s; check() }
+                    }
+                    TextEditor(text: $text)
+                        .font(.system(size: 12, design: .monospaced))
+                        .frame(minHeight: 120)
+                        .onChange(of: text) { _, _ in check() }
+                }
+                if let error { Text(error).foregroundStyle(Palette.buoy) }
+                if let parsed {
+                    Section {
+                        Text("Found \(parsed.1.text)")
+                        Text("This replaces the plan and progress in this app. Swims from Apple Health stay in Health, but are not counted again automatically. You can count them from Swims to sort on Today.")
+                            .font(.system(size: 14)).foregroundStyle(Palette.muted)
+                        Button("Replace with web app data") {
+                            store.importFromWeb(parsed.0)
+                            dismiss()
+                        }
+                        .buttonStyle(PrimaryButtonStyle())
+                        .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+                    }
+                }
+            }
+            .navigationTitle("Import from web app")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } } }
+        }
+    }
+
+    private func check() {
+        guard !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { parsed = nil; error = nil; return }
+        do {
+            parsed = try WebImport.parse(text)
+            error = nil
+        } catch {
+            parsed = nil
+            self.error = error.localizedDescription
+        }
     }
 }

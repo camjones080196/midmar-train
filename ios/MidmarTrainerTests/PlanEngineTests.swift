@@ -217,6 +217,27 @@ final class SwimMatchingTests: XCTestCase {
         XCTAssertEqual(store.swumMetres(week: 0), 300, "as planned follows the edited sets")
     }
 
+    func testWebImportKeepsEdits() throws {
+        let json = #"""
+        {"midmarTrainer":1,"cfg":{"start":"2026-11-17","race":"2027-02-13","level":200,"perWeek":3,"days":[1,3,6],"pool":25,"peak":2000,"setup":true},
+         "done":{"2026-11-17":"2026-11-17"},"res":{"2026-11-17":{"feel":4,"t":1710,"g":0,"reps":[]}},
+         "skip":{"2026-11-21":1},"moved":{"2026-11-18":"2026-11-19"},
+         "edits":{"2026-11-17":{"steps":[{"kind":"wu","reps":1,"dist":200,"zone":"easy","rest":0,"label":""},{"kind":"main","reps":6,"dist":50,"zone":"fast","rest":30,"label":""}]}},
+         "tt":[{"id":"x","date":"2026-11-17","dist":100,"secs":130}],"log":[{"id":"y","date":"2026-11-17","m":300,"ow":false}]}
+        """#
+        let (st, sum) = try WebImport.parse(json)
+        XCTAssertEqual(sum, WebImport.Summary(done: 1, skipped: 1, moved: 1, edited: 1, trials: 1, nonstop: 1))
+        XCTAssertEqual(st.done["2026-11-17"]?.time, 1710)
+        let store = TrainerStore(fileURL: nil, now: { Days.date("2026-11-17")! })
+        store.importFromWeb(st)
+        let s = store.session("2026-11-17")!
+        XCTAssertTrue(s.edited)
+        XCTAssertEqual(s.metres, 500)
+        XCTAssertTrue(store.isDone(s.key))
+        XCTAssertEqual(store.session("2026-11-18")!.at, Days.date("2026-11-19")!)
+        XCTAssertThrowsError(try WebImport.parse("hello"))
+    }
+
     func testFreshPlanStartsToday() {
         let store = TrainerStore(fileURL: nil, now: { Days.date("2026-11-19")! })
         XCTAssertEqual(store.state.config.start, "2026-11-19")
