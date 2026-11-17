@@ -170,6 +170,8 @@ final class TrainerStore {
     }
 
     /// Counts a Health swim for a session, or for nothing.
+    /// Counts a Health swim for a session, or for nothing. Works for any swim, including one
+    /// already counted for another session: that session goes back to not done.
     func link(_ swimID: String, to key: String?) {
         guard let swim = swims.first(where: { $0.id == swimID }) else { return }
         update { st in
@@ -177,9 +179,39 @@ final class TrainerStore {
                 st.ignored.remove(swimID)
                 apply(swim, to: key, in: &st)
             } else {
+                detach(swimID, in: &st)
                 st.ignored.insert(swimID)
             }
         }
+    }
+
+    /// Stops counting a session's Health swim. The session stays done, as a manual tick.
+    func unlinkSwim(from key: String) {
+        guard let id = state.done[key]?.workoutID else { return }
+        update { st in
+            st.links[id] = nil
+            st.ignored.insert(id)
+            st.trials.removeAll { $0.workoutID == id }
+            st.done[key]?.source = .manual
+            st.done[key]?.workoutID = nil
+            st.done[key]?.distance = nil
+        }
+    }
+
+    /// The session a Health swim counts for, if any.
+    func linkedSession(for swimID: String) -> Session? { state.links[swimID].flatMap(session) }
+
+    /// Swims a session could be linked to: everything read from Health, closest to the session's day first.
+    func linkCandidates(for key: String) -> [SwimRecord] {
+        guard let s = session(key) else { return swims }
+        return swims.sorted { abs(Days.between(s.at, $0.day)) < abs(Days.between(s.at, $1.day)) || (abs(Days.between(s.at, $0.day)) == abs(Days.between(s.at, $1.day)) && $0.start > $1.start) }
+    }
+
+    /// Sessions a swim could count for: nearest to the swim's day first.
+    func sessionCandidates(for swim: SwimRecord, limit: Int = 8) -> [Session] {
+        Array(sessions.filter { abs(Days.between($0.at, swim.day)) <= 14 }
+            .sorted { abs(Days.between($0.at, swim.day)) < abs(Days.between($1.at, swim.day)) }
+            .prefix(limit))
     }
 
     /// Replaces everything with data copied from the web app. Swim links from Health are kept,
@@ -216,9 +248,20 @@ final class TrainerStore {
         }
     }
 
+    /// Takes a swim off whatever session it counts for, and drops the trial time read from it.
+    private func detach(_ swimID: String, in st: inout TrainerState) {
+        if let previous = st.links[swimID], st.done[previous]?.workoutID == swimID { st.done[previous] = nil }
+        st.links[swimID] = nil
+        st.trials.removeAll { $0.workoutID == swimID }
+    }
+
     private func apply(_ swim: SwimRecord, to key: String, in st: inout TrainerState) {
-        if let old = st.links.first(where: { $0.value == key && $0.key != swim.id })?.key { st.links[old] = nil }
-        if let previous = st.links[swim.id], previous != key, st.done[previous]?.workoutID == swim.id { st.done[previous] = nil }
+        // A swim already counted for this session is replaced, and not matched again automatically.
+        for old in st.links.filter({ $0.value == key && $0.key != swim.id }).map(\.key) {
+            detach(old, in: &st)
+            st.ignored.insert(old)
+        }
+        if st.links[swim.id] != key { detach(swim.id, in: &st) }
         st.links[swim.id] = key
         let feel = st.done[key]?.feel ?? 0
         st.done[key] = DoneRecord(date: Days.key(swim.day), feel: feel, time: Int(swim.duration.rounded()),

@@ -261,8 +261,8 @@ struct UnmatchedSwimsCard: View {
                     }
                     Spacer()
                     Menu("Count it") {
-                        ForEach(candidates(for: sw)) { s in
-                            Button("\(s.title), \(Days.withWeekday(s.at))") { store.link(sw.id, to: s.key) }
+                        ForEach(store.sessionCandidates(for: sw)) { s in
+                            Button("\(s.title), \(Days.withWeekday(s.at))\(store.isDone(s.key) ? " (done)" : "")") { store.link(sw.id, to: s.key) }
                         }
                         Divider()
                         Button("Don't count it", role: .destructive) { store.link(sw.id, to: nil) }
@@ -272,12 +272,5 @@ struct UnmatchedSwimsCard: View {
                 .padding(.vertical, 4)
             }
         }
-    }
-
-    private func candidates(for sw: SwimRecord) -> [Session] {
-        store.sessions
-            .filter { !store.isDone($0.key) && !$0.isRace && abs(Days.between($0.at, sw.day)) <= 7 }
-            .sorted { abs(Days.between($0.at, sw.day)) < abs(Days.between($1.at, sw.day)) }
-            .prefix(6).map { $0 }
     }
 }

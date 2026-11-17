@@ -9,6 +9,7 @@ struct SessionDetailView: View {
     @State private var showFinish = false
     @State private var showEdit = false
     @State private var showMove = false
+    @State private var showLink = false
     @State private var showWatchPreview = false
     @State private var watchPlan: WorkoutPlan?
 
@@ -47,7 +48,7 @@ struct SessionDetailView: View {
                 if s.edited { Text("You edited this swim. Use Edit swim to change it again or go back to the planned sets.").font(.system(size: 14)).foregroundStyle(Palette.muted) }
 
                 if let done {
-                    ResultCard(session: s, record: done, onEdit: { showFinish = true }, onEditSets: { showEdit = true })
+                    ResultCard(session: s, record: done, onEdit: { showFinish = true }, onEditSets: { showEdit = true }, onLink: { showLink = true })
                 } else if store.isSkipped(s.key) {
                     Card {
                         Text("You skipped this swim. It does not count as missed.").foregroundStyle(Palette.muted)
@@ -64,6 +65,7 @@ struct SessionDetailView: View {
         .sheet(isPresented: $showFinish) { FinishSheet(session: s) }
         .sheet(isPresented: $showEdit) { EditSessionView(session: s) }
         .sheet(isPresented: $showMove) { MoveSheet(session: s) }
+        .sheet(isPresented: $showLink) { LinkSwimSheet(session: s) }
         .workoutPreview(watchPlan ?? WorkoutPlan(.goal(SingleGoalWorkout(activity: .swimming, location: .indoor, goal: .open))), isPresented: $showWatchPreview)
     }
 
@@ -102,6 +104,8 @@ struct SessionDetailView: View {
             }
             Button("Mark as done") { showFinish = true }
                 .buttonStyle(s.isRace ? AnyButtonStyle(PrimaryButtonStyle()) : AnyButtonStyle(GhostButtonStyle()))
+            Button { showLink = true } label: { Label("Link a swim from Apple Health", systemImage: "link") }
+                .buttonStyle(GhostButtonStyle())
             if !s.isRace {
                 HStack(spacing: 10) {
                     Button("Edit swim") { showEdit = true }.buttonStyle(GhostButtonStyle())
@@ -173,6 +177,7 @@ struct ResultCard: View {
     let record: DoneRecord
     let onEdit: () -> Void
     let onEditSets: () -> Void
+    let onLink: () -> Void
 
     var body: some View {
         Card {
@@ -203,8 +208,16 @@ struct ResultCard: View {
                 Button("Edit result", action: onEdit).buttonStyle(GhostButtonStyle())
                 Button("Edit sets", action: onEditSets).buttonStyle(GhostButtonStyle())
             }
-            Button("Mark as not done") { store.undo(session.key) }
-                .font(.system(size: 15)).foregroundStyle(Palette.muted).frame(maxWidth: .infinity)
+            Button { onLink() } label: {
+                Label(record.workoutID == nil ? "Link a swim from Apple Health" : "Change the linked swim", systemImage: "link")
+            }
+            .buttonStyle(GhostButtonStyle())
+            HStack {
+                if record.workoutID != nil { Button("Unlink swim") { store.unlinkSwim(from: session.key) } }
+                Spacer()
+                Button("Mark as not done") { store.undo(session.key) }
+            }
+            .font(.system(size: 15)).foregroundStyle(Palette.muted)
         }
         .overlay(RoundedRectangle(cornerRadius: 14).stroke(Palette.water))
     }
@@ -413,6 +426,78 @@ struct EditSessionView: View {
             if s.label == "non-stop" && s.reps > 1 { s.label = "" }
             return s
         })
+        dismiss()
+    }
+}
+
+/// Pick any swim from Apple Health to count for this session.
+struct LinkSwimSheet: View {
+    @Environment(TrainerStore.self) private var store
+    @Environment(HealthService.self) private var health
+    @Environment(\.dismiss) private var dismiss
+    let session: Session
+    @State private var pending: SwimRecord?
+
+    var body: some View {
+        NavigationStack {
+            List {
+                Section {
+                    Text("Pick the swim to count for \(session.title) on \(Days.withWeekday(session.at)). Its time and distance replace what is recorded now.")
+                        .font(.system(size: 14)).foregroundStyle(Palette.muted)
+                    if health.status == .notConnected {
+                        Button("Connect Apple Health") { Task { await health.connect(); await health.sync(into: store) } }
+                    }
+                }
+                let swims = store.linkCandidates(for: session.key)
+                if swims.isEmpty {
+                    Section {
+                        Text("No swims found in Apple Health for the last few weeks. Pull down to check again.").foregroundStyle(Palette.muted)
+                    }
+                }
+                Section("Swims in Apple Health") {
+                    ForEach(swims) { sw in
+                        let linked = store.linkedSession(for: sw.id)
+                        Button {
+                            if let other = linked, other.key != session.key { pending = sw } else { link(sw) }
+                        } label: {
+                            HStack(alignment: .top) {
+                                VStack(alignment: .leading, spacing: 3) {
+                                    Text("\(Days.withWeekday(sw.day)) · \(Fmt.num(sw.metres)) m \(sw.openWater ? "open water" : "pool")")
+                                        .font(.system(size: 16, weight: .semibold)).foregroundStyle(Palette.ink)
+                                    Text([Fmt.time(sw.duration), sw.start.formatted(date: .omitted, time: .shortened),
+                                          sw.longestNonStop.map { "longest non-stop \(Fmt.num($0)) m" }].compactMap { $0 }.joined(separator: " · "))
+                                        .font(.system(size: 13)).foregroundStyle(Palette.muted)
+                                    Text(status(sw, linked)).font(.system(size: 13, weight: .semibold))
+                                        .foregroundStyle(linked?.key == session.key ? Palette.water : Palette.muted)
+                                }
+                                Spacer()
+                                if linked?.key == session.key { Image(systemName: "checkmark").foregroundStyle(Palette.water) }
+                            }
+                        }
+                    }
+                }
+            }
+            .refreshable { await health.sync(into: store) }
+            .navigationTitle("Link a swim")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } } }
+            .confirmationDialog("Move this swim?", isPresented: Binding(get: { pending != nil }, set: { if !$0 { pending = nil } }), titleVisibility: .visible) {
+                if let sw = pending { Button("Count it for \(session.title) instead") { link(sw) } }
+            } message: {
+                if let sw = pending, let other = store.linkedSession(for: sw.id) {
+                    Text("It counts for \(other.title) on \(Days.withWeekday(other.at)) now. That swim goes back to not done.")
+                }
+            }
+        }
+    }
+
+    private func status(_ sw: SwimRecord, _ linked: Session?) -> String {
+        if let linked { return linked.key == session.key ? "Linked to this swim" : "Counts for \(linked.title), \(Days.withWeekday(linked.at))" }
+        return store.state.ignored.contains(sw.id) ? "Not counted" : "Not linked"
+    }
+
+    private func link(_ sw: SwimRecord) {
+        store.link(sw.id, to: session.key)
         dismiss()
     }
 }

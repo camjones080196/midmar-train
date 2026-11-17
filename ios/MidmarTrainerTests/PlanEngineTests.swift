@@ -238,6 +238,46 @@ final class SwimMatchingTests: XCTestCase {
         XCTAssertThrowsError(try WebImport.parse("hello"))
     }
 
+    func testManualLinking() {
+        let store = TrainerStore(fileURL: nil, now: { Days.date("2026-11-22")! })
+        var c = store.state.config
+        c.start = "2026-11-16"; c.race = "2027-02-13"; c.level = 200
+        store.applyConfig(c, trial: nil)
+        let mon = store.sessions[0], wed = store.sessions[1], sat = store.sessions[2]
+        func sw(_ id: String, _ day: String, _ m: Double) -> SwimRecord {
+            let d = Days.date(day)!.addingTimeInterval(7 * 3600)
+            return SwimRecord(id: id, start: d, end: d.addingTimeInterval(1500), duration: 1500, distance: m,
+                              openWater: false, lapLength: 25, sets: [SwimSet(distance: 100, duration: 95)], source: "Watch")
+        }
+        store.ingest([sw("a", mon.key, 700), sw("b", wed.key, 800)])
+        XCTAssertEqual(store.state.links["a"], mon.key)
+        XCTAssertEqual(store.state.links["b"], wed.key)
+
+        // Move swim a onto Saturday: Monday goes back to not done.
+        store.link("a", to: sat.key)
+        XCTAssertNil(store.state.done[mon.key])
+        XCTAssertEqual(store.state.done[sat.key]?.distance, 700)
+
+        // Link b to Saturday: a is replaced and left alone from then on.
+        store.link("b", to: sat.key)
+        XCTAssertNil(store.state.done[wed.key])
+        XCTAssertEqual(store.state.done[sat.key]?.workoutID, "b")
+        XCTAssertTrue(store.state.ignored.contains("a"))
+        store.ingest(store.swims)
+        XCTAssertNil(store.state.links["a"], "a replaced swim is not matched again")
+
+        // Unlink keeps the session done as a manual tick.
+        store.unlinkSwim(from: sat.key)
+        XCTAssertEqual(store.state.done[sat.key]?.source, .manual)
+        XCTAssertNil(store.state.links["b"])
+
+        // Don't count it
+        store.link("a", to: mon.key)
+        store.link("a", to: nil)
+        XCTAssertNil(store.state.done[mon.key])
+        XCTAssertTrue(store.state.ignored.contains("a"))
+    }
+
     func testFreshPlanStartsToday() {
         let store = TrainerStore(fileURL: nil, now: { Days.date("2026-11-19")! })
         XCTAssertEqual(store.state.config.start, "2026-11-19")

@@ -217,12 +217,28 @@ struct HealthSwimsCard: View {
                         Spacer()
                         Text(Days.withWeekday(sw.day)).font(.system(size: 13)).foregroundStyle(Palette.muted)
                     }
-                    Text([Fmt.time(sw.duration),
-                          sw.longestNonStop.map { "longest non-stop \(Fmt.num($0)) m" },
-                          store.state.links[sw.id].flatMap { store.session($0)?.title }.map { "counted for \($0)" }
-                            ?? (store.state.ignored.contains(sw.id) ? "not counted" : nil)]
-                        .compactMap { $0 }.joined(separator: " · "))
-                        .font(.system(size: 13)).foregroundStyle(Palette.muted)
+                    HStack(alignment: .firstTextBaseline) {
+                        Text([Fmt.time(sw.duration),
+                              sw.longestNonStop.map { "longest non-stop \(Fmt.num($0)) m" },
+                              store.linkedSession(for: sw.id).map { "counted for \($0.title), \(Days.short($0.at))" }
+                                ?? (store.state.ignored.contains(sw.id) ? "not counted" : nil)]
+                            .compactMap { $0 }.joined(separator: " · "))
+                            .font(.system(size: 13)).foregroundStyle(Palette.muted)
+                        Spacer()
+                        Menu {
+                            ForEach(store.sessionCandidates(for: sw)) { s in
+                                Button {
+                                    store.link(sw.id, to: s.key)
+                                } label: {
+                                    Text("\(s.title), \(Days.withWeekday(s.at))\(store.linkedSession(for: sw.id)?.key == s.key ? " ✓" : store.isDone(s.key) ? " (done)" : "")")
+                                }
+                            }
+                            Divider()
+                            Button("Don't count it", role: .destructive) { store.link(sw.id, to: nil) }
+                        } label: {
+                            Label("Link", systemImage: "link").font(.system(size: 13, weight: .semibold))
+                        }
+                    }
                 }
                 .padding(.vertical, 4)
             }
