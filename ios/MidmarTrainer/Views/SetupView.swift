@@ -97,14 +97,25 @@ struct SetupView: View {
                 case .failed(let m): Text("Health could not be read: \(m)").foregroundStyle(Palette.buoy)
                 }
                 if watch.isSupported {
+                    Toggle("Send swims to Apple Watch automatically", isOn: Binding(
+                        get: { watch.autoSend },
+                        set: { on in
+                            watch.autoSend = on
+                            Task {
+                                if on { await watch.sync(store.watchQueue(), pool: store.plan.pool) } else { await watch.clear() }
+                            }
+                        }))
                     switch watch.authorization {
-                    case .authorized: Label("Workouts can be scheduled on your watch.", systemImage: "applewatch").foregroundStyle(Palette.water)
-                    case .denied, .restricted: Text("Workout scheduling is off. Turn it on in Settings, Privacy & Security, Health.").foregroundStyle(Palette.muted)
-                    default: Button("Allow sending workouts to Apple Watch") { Task { await watch.requestAccess() } }
+                    case .authorized:
+                        Label(watch.autoSend ? "\(watch.scheduledCount) \(watch.scheduledCount == 1 ? "swim" : "swims") waiting in the Workout app on your watch." : "Workouts can be scheduled on your watch.",
+                              systemImage: "applewatch").foregroundStyle(Palette.water)
+                    case .denied, .restricted: Text("Workout scheduling is off. Turn it on in the Settings app under Privacy & Security, then Health.").foregroundStyle(Palette.muted)
+                    default: Button("Allow sending workouts to Apple Watch") { Task { await watch.requestAccess(); await watch.sync(store.watchQueue(), pool: store.plan.pool) } }
                     }
+                    if let m = watch.message { Text(m).font(.system(size: 13)).foregroundStyle(Palette.muted) }
                 }
             } header: { Text("Apple Health and Watch") } footer: {
-                Text("The app reads your swim workouts. It does not write to Health, so your watch's swims are never doubled up.")
+                Text("The app reads your swim workouts and does not write to Health, so your watch's swims are never doubled up. With automatic sending on, the next two weeks of swims wait in the Workout app on your watch, each on its day, and update when you change, move, skip or finish one.")
             }
 
             Section {

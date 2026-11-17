@@ -180,6 +180,24 @@ final class SwimMatchingTests: XCTestCase {
         XCTAssertTrue(store.unmatchedSwims.isEmpty)
     }
 
+    func testWatchQueueFollowsChanges() {
+        let store = TrainerStore(fileURL: nil, now: { Days.date("2026-11-17")! })
+        var c = store.state.config
+        c.start = "2026-11-16"; c.race = "2027-02-13"
+        store.applyConfig(c, trial: nil)
+        let queue = store.watchQueue()
+        XCTAssertFalse(queue.isEmpty)
+        XCTAssertTrue(queue.allSatisfy { $0.at >= store.today && $0.at < Days.add(store.today, 14) })
+        XCTAssertFalse(queue.contains { $0.key == "2026-11-16" }, "yesterday's swim is not sent")
+        let before = store.watchToken
+        store.skip(queue[0].key)
+        XCTAssertNotEqual(store.watchToken, before)
+        XCTAssertFalse(store.watchQueue().contains { $0.key == queue[0].key })
+        let tokenAfterSkip = store.watchToken
+        store.saveEdit(queue[1].key, steps: [SetStep(.main, 2, 100, .easy, rest: 20)])
+        XCTAssertNotEqual(store.watchToken, tokenAfterSkip, "an edit resends that swim")
+    }
+
     func testFreshPlanStartsToday() {
         let store = TrainerStore(fileURL: nil, now: { Days.date("2026-11-19")! })
         XCTAssertEqual(store.state.config.start, "2026-11-19")

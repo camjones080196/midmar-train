@@ -42,24 +42,42 @@ enum WatchWorkouts {
         return WorkoutPlan(.custom(workout))
     }
 
+    /// Changes whenever what the watch would show for this swim changes.
+    static func signature(_ s: Session) -> String {
+        ([s.title, s.openWater ? "ow" : "pool", String(s.cont ?? 0)] + s.steps.map { "\($0.kind.rawValue)\($0.reps)x\($0.dist)\($0.zone.rawValue)r\($0.rest)\($0.label)" })
+            .joined(separator: "|")
+    }
+
     static func stepName(_ st: SetStep) -> String {
         if st.kind == .drill { return st.label.isEmpty ? "Drill" : st.label }
         return st.zone.name
     }
 }
 
-/// Schedules workouts so they appear in the Workout app on the planned day.
+/// Keeps the Workout app on your watch in step with the plan: the next two weeks of swims are
+/// scheduled for their days, and a swim that is changed, moved, skipped or done is updated or removed.
 @Observable
 final class WatchScheduler {
     private(set) var authorization: WorkoutScheduler.AuthorizationState = .notDetermined
     private(set) var message: String?
+    private(set) var isSyncing = false
+    private(set) var scheduledCount = 0
+
+    private let autoKey = "autoSendToWatch"
+    private let sigKey = "watchScheduleSignatures"
 
     var isSupported: Bool { WorkoutScheduler.isSupported }
+
+    var autoSend: Bool {
+        get { access(keyPath: \.autoSend); return UserDefaults.standard.object(forKey: autoKey) as? Bool ?? true }
+        set { withMutation(keyPath: \.autoSend) { UserDefaults.standard.set(newValue, forKey: autoKey) } }
+    }
 
     @MainActor
     func refresh() async {
         guard isSupported else { return }
         authorization = await WorkoutScheduler.shared.authorizationState
+        scheduledCount = await WorkoutScheduler.shared.scheduledWorkouts.count
     }
 
     @MainActor
@@ -68,32 +86,65 @@ final class WatchScheduler {
         authorization = await WorkoutScheduler.shared.requestAuthorization()
     }
 
-    /// Schedules each session at 6:00 on its day, replacing anything this app scheduled for that day.
+    /// Brings the watch's scheduled swims in line with `sessions`, the swims still to do in the next two weeks.
+    /// Only days whose workout changed are touched. With `force`, every day is sent again.
     @MainActor
-    func schedule(_ sessions: [Session], pool: Int) async -> Int {
-        guard isSupported else { message = "Scheduling needs an iPhone paired with an Apple Watch."; return 0 }
-        if authorization != .authorized { await requestAccess() }
+    func sync(_ sessions: [Session], pool: Int, force: Bool = false) async {
+        guard isSupported, !isSyncing else { return }
+        if authorization == .notDetermined { await requestAccess() }
         guard authorization == .authorized else {
             message = "Allow workout scheduling in Setup to send swims to your watch."
-            return 0
+            return
         }
-        let existing = await WorkoutScheduler.shared.scheduledWorkouts
-        var count = 0
-        for s in sessions {
+        isSyncing = true
+        defer { isSyncing = false }
+
+        var wanted: [String: (plan: WorkoutPlan, sig: String, at: Date)] = [:]
+        let limit = max(1, min(WorkoutScheduler.maxAllowedScheduledWorkoutCount, 14))
+        for s in sessions.prefix(limit) {
             guard let plan = WatchWorkouts.plan(for: s, pool: pool) else { continue }
-            var when = Days.calendar.dateComponents([.year, .month, .day], from: s.at)
-            when.hour = 6
-            for old in existing where sameDay(old.date, when) {
+            wanted[Days.key(s.at)] = (plan, WatchWorkouts.signature(s), s.at)
+        }
+
+        var sigs = (UserDefaults.standard.dictionary(forKey: sigKey) as? [String: String]) ?? [:]
+        var kept = Set<String>()
+        for old in await WorkoutScheduler.shared.scheduledWorkouts {
+            guard let d = Days.calendar.date(from: old.date) else { continue }
+            let k = Days.key(d)
+            if !force, let w = wanted[k], sigs[k] == w.sig, !kept.contains(k) {
+                kept.insert(k)
+            } else {
                 await WorkoutScheduler.shared.remove(old.plan, at: old.date)
             }
-            await WorkoutScheduler.shared.schedule(plan, at: when)
-            count += 1
         }
-        message = count == 1 ? "Sent to your watch for \(Days.withWeekday(sessions[0].at))." : "Sent \(count) swims to your watch."
-        return count
+        var added = 0
+        var newSigs: [String: String] = [:]
+        for (k, w) in wanted {
+            newSigs[k] = w.sig
+            guard !kept.contains(k) else { continue }
+            var when = Days.calendar.dateComponents([.year, .month, .day], from: w.at)
+            when.hour = 6
+            await WorkoutScheduler.shared.schedule(w.plan, at: when)
+            added += 1
+        }
+        sigs = newSigs
+        UserDefaults.standard.set(sigs, forKey: sigKey)
+        scheduledCount = wanted.count
+        if added > 0 || force {
+            message = wanted.isEmpty ? "No swims to send in the next two weeks."
+                : "Your watch has the next \(wanted.count) \(wanted.count == 1 ? "swim" : "swims")."
+        }
     }
 
-    private func sameDay(_ a: DateComponents, _ b: DateComponents) -> Bool {
-        a.year == b.year && a.month == b.month && a.day == b.day
+    /// Takes every scheduled swim off the watch.
+    @MainActor
+    func clear() async {
+        guard isSupported, authorization == .authorized else { return }
+        for old in await WorkoutScheduler.shared.scheduledWorkouts {
+            await WorkoutScheduler.shared.remove(old.plan, at: old.date)
+        }
+        UserDefaults.standard.removeObject(forKey: sigKey)
+        scheduledCount = 0
+        message = "Removed the scheduled swims from your watch."
     }
 }

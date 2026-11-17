@@ -59,6 +59,17 @@ final class TrainerStore {
         return (next, (doneToday ? "Done for today · next swim " : "Next swim · ") + Days.withWeekday(next.at))
     }
 
+    /// Swims to keep on the watch: still to do, from today for the next two weeks.
+    func watchQueue(days: Int = 14) -> [Session] {
+        let t = today, end = Days.add(t, days)
+        return sessions.filter { !$0.isRace && $0.at >= t && $0.at < end && !isDone($0.key) && !isSkipped($0.key) }
+    }
+
+    /// Changes whenever the watch's swims need updating.
+    var watchToken: String {
+        watchQueue().map { "\(Days.key($0.at)):\(WatchWorkouts.signature($0))" }.joined(separator: "#")
+    }
+
     /// No swims ticked in the last two weeks, while the plan is under way.
     var isStale: Bool {
         let t = today

@@ -43,6 +43,12 @@ struct RootView: View {
             await watch.refresh()
             await health.sync(into: store)
         }
+        .task(id: watch.autoSend ? store.watchToken : "off") {
+            // Wait a moment so a run of quick changes sends once.
+            try? await Task.sleep(for: .seconds(2))
+            guard !Task.isCancelled, watch.autoSend else { return }
+            await watch.sync(store.watchQueue(), pool: store.plan.pool)
+        }
         .onChange(of: phase) { _, newPhase in
             guard newPhase == .active else { return }
             store.freshStart()

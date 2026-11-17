@@ -21,18 +21,14 @@ struct PlanView: View {
                 Button {
                     sending = true
                     Task {
-                        let w = store.currentWeek
-                        let upcoming = store.sessions.filter {
-                            let i = store.plan.weekIndex(of: $0.at)
-                            return (i == w || i == w + 1) && $0.at >= store.today && !store.isDone($0.key) && !store.isSkipped($0.key) && !$0.isRace
-                        }
-                        _ = await watch.schedule(upcoming, pool: store.plan.pool)
+                        await watch.sync(store.watchQueue(), pool: store.plan.pool, force: true)
                         sending = false
                     }
                 } label: {
-                    Label(sending ? "Sending…" : "Send this week and next to Apple Watch", systemImage: "applewatch")
+                    Label(sending || watch.isSyncing ? "Sending…" : watch.autoSend ? "Send to Apple Watch again" : "Send the next two weeks to Apple Watch", systemImage: "applewatch")
                 }
                 .disabled(sending)
+                if watch.autoSend { Text("Swims for the next two weeks are sent to your watch automatically and update when you change, move or skip one.").font(.system(size: 13)).foregroundStyle(Palette.muted) }
                 if let m = watch.message { Text(m).font(.system(size: 13)).foregroundStyle(Palette.muted) }
             }
             ForEach(Array(plan.phases.enumerated()), id: \.offset) { pi, ph in
