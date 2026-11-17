@@ -45,7 +45,7 @@ struct ProgressTab: View {
 
                 MilestonesCard()
 
-                if !store.swims.isEmpty || health.status == .connected { HealthSwimsCard() }
+                HealthSwimsCard()
             }
             .padding(16)
         }
@@ -205,9 +205,26 @@ struct HealthSwimsCard: View {
                 Spacer()
                 if health.isSyncing { ProgressView() }
             }
-            if store.swims.isEmpty {
-                Text("No swims found yet. Record a Pool Swim or Open Water Swim on your watch and it shows up here.")
+            switch health.status {
+            case .unavailable:
+                Text("Apple Health is not available on this device.").font(.system(size: 14)).foregroundStyle(Palette.muted)
+            case .notConnected:
+                Text("Connect Apple Health to see the swims your watch records here and link each one to a planned swim.")
                     .font(.system(size: 14)).foregroundStyle(Palette.muted)
+                Button("Connect Apple Health") { Task { await health.connect(); await health.sync(into: store) } }
+                    .buttonStyle(PrimaryButtonStyle())
+            case .failed(let m):
+                Text("Apple Health could not be read: \(m)").font(.system(size: 14)).foregroundStyle(Palette.buoy)
+                Button("Try again") { Task { await health.connect(); await health.sync(into: store) } }.buttonStyle(GhostButtonStyle())
+            case .connected:
+                if store.swims.isEmpty {
+                    Text("No swims found in the last four weeks. Record a Pool Swim or Open Water Swim on your watch and it shows up here, with a Link button to count it for a planned swim. If you have swum, check that Midmar is allowed to read Workouts in the Health app, under Sharing, Apps.")
+                        .font(.system(size: 14)).foregroundStyle(Palette.muted)
+                    Button("Check again") { Task { await health.sync(into: store) } }.buttonStyle(GhostButtonStyle())
+                } else {
+                    Text("Tap Link on a swim to count it for a planned swim, move it to another one, or leave it out.")
+                        .font(.system(size: 13)).foregroundStyle(Palette.muted)
+                }
             }
             ForEach(store.swims.prefix(10)) { sw in
                 VStack(alignment: .leading, spacing: 2) {
