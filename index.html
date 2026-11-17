@@ -1,27 +1,14 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="color-scheme" content="light dark">
-<meta name="theme-color" content="#17594D">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Midmar Trainer">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" href="icon-192.png">
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
-<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}img{max-width:100%}[hidden]{display:none!important}</style>
 <title>Midmar Mile Trainer</title>
-</head>
-<body>
-
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;700&display=swap">
 <style>
-/* Layout: one narrow column, fixed bottom tab bar. Pool-deck whiteboard feel: condensed numerals for sets, a lane-rope divider, buoy orange as the single action colour. */
+/* Layout: one narrow column, today first, fixed bottom tab bar. The next swim and the guided workout sit on a deep "pool" ground with pace-clock numerals; everything else stays quiet on paper. */
 :root {
   --bg: #EDF1EE;
   --surface: #FFFFFF;
@@ -32,8 +19,22 @@
   --water-soft: #DCEBE6;
   --buoy: #C2410C;
   --on-buoy: #FFFFFF;
+  --pool: #0E3F37;
+  --pool-ink: #F1F7F4;
+  --pool-muted: #A9C7BD;
+  --pool-line: #2A5C52;
+  --pop: #FF8A55;
+  --on-pop: #1B0B03;
+  --t-tech: #17594D;
+  --t-int: #6D38D4;
+  --t-speed: #B5175B;
+  --t-easy: #4A7410;
+  --t-long: #1D4ED8;
+  --t-tt: #8A5A06;
+  --t-race: #C2410C;
   --f-display: 'Barlow Condensed', 'Arial Narrow', system-ui, sans-serif;
   --f-body: 'Barlow', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  padding-top: env(safe-area-inset-top, 0px);
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
@@ -46,6 +47,19 @@
     --water-soft: #17332C;
     --buoy: #FF8A55;
     --on-buoy: #1B0B03;
+    --pool: #0F2C26;
+    --pool-ink: #E5EFEA;
+    --pool-muted: #8DB3A7;
+    --pool-line: #24463D;
+    --pop: #FF8A55;
+    --on-pop: #1B0B03;
+    --t-tech: #66C7AD;
+    --t-int: #C4A7FF;
+    --t-speed: #FF8FB8;
+    --t-easy: #A8D568;
+    --t-long: #8AB4FF;
+    --t-tt: #F2C14E;
+    --t-race: #FF8A55;
     color-scheme: dark;
   }
 }
@@ -59,23 +73,49 @@
   --water-soft: #17332C;
   --buoy: #FF8A55;
   --on-buoy: #1B0B03;
+  --pool: #0F2C26;
+  --pool-ink: #E5EFEA;
+  --pool-muted: #8DB3A7;
+  --pool-line: #24463D;
+  --pop: #FF8A55;
+  --on-pop: #1B0B03;
+  --t-tech: #66C7AD;
+  --t-int: #C4A7FF;
+  --t-speed: #FF8FB8;
+  --t-easy: #A8D568;
+  --t-long: #8AB4FF;
+  --t-tt: #F2C14E;
+  --t-race: #FF8A55;
   color-scheme: dark;
 }
+/* on the pool ground the workout colours always use their bright values */
+.onpool {
+  --t-tech: #66C7AD; --t-int: #C4A7FF; --t-speed: #FF8FB8; --t-easy: #A8D568; --t-long: #8AB4FF; --t-tt: #F2C14E; --t-race: #FF8A55;
+}
+.ty-tech { --t: var(--t-tech); } .ty-int { --t: var(--t-int); } .ty-speed { --t: var(--t-speed); } .ty-easy { --t: var(--t-easy); }
+.ty-long { --t: var(--t-long); } .ty-tt { --t: var(--t-tt); } .ty-race { --t: var(--t-race); }
+
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { color-scheme: light; }
 body {
   margin: 0;
   background: var(--bg);
   color: var(--ink);
   font: 400 16px/1.45 var(--f-body);
   padding-inline: 16px;
-  padding-block: 12px 104px;
+  padding-block: 12px 108px;
   -webkit-text-size-adjust: 100%;
 }
+body.lock { overflow: hidden; }
 .wrap { max-width: 560px; margin-inline: auto; }
-h1, h2, h3, p { margin: 0; }
-button { font: inherit; color: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
-button:focus-visible, input:focus-visible, a:focus-visible { outline: 3px solid var(--buoy); outline-offset: 2px; }
+h1, h2, h3, p, ul, ol { margin: 0; }
+ul, ol { padding: 0; list-style: none; }
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible { outline: 3px solid var(--buoy); outline-offset: 2px; }
 b { font-weight: 600; }
+.ic { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex: none; }
 
 /* header */
 .top { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; padding-block: 8px 14px; }
@@ -91,41 +131,138 @@ b { font-weight: 600; }
     linear-gradient(var(--line), var(--line)) 0 50% / 100% 1px no-repeat;
 }
 
-/* week header */
-.wknav { display: grid; grid-template-columns: 48px 1fr 48px; align-items: center; gap: 8px; }
+/* shared pieces */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; margin-bottom: 14px; }
+.card h3 { font: 700 22px/1.1 var(--f-display); margin-bottom: 10px; }
+.card > p + p { margin-top: 8px; }
+.sub { color: var(--muted); font-size: 15px; }
+.btn { width: 100%; min-height: 50px; border-radius: 12px; border: 1.5px solid var(--buoy); background: var(--buoy); color: var(--on-buoy); font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 0 14px; }
+.btn.ghost { background: transparent; color: var(--ink); border-color: var(--line); }
+.btnrow { display: grid; gap: 10px; margin-top: 14px; }
+.lnk { background: none; border: 0; color: var(--muted); text-decoration: underline; min-height: 44px; padding: 0 8px; }
+.chip { display: inline-flex; align-items: center; gap: 7px; padding: 3px 10px 3px 8px; border-radius: 99px; font: 600 12px var(--f-body); letter-spacing: .06em; text-transform: uppercase; color: var(--t, var(--water)); background: color-mix(in srgb, var(--t, var(--water)) 13%, transparent); }
+.chip::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+.pill { display: inline-block; padding: 2px 10px; border-radius: 99px; background: var(--water-soft); color: var(--water); font: 600 12px var(--f-body); letter-spacing: .04em; }
+.legend { font-size: 13px; color: var(--muted); padding-inline: 4px; }
+.err { color: var(--buoy); font-size: 14px; }
+.pips { display: inline-flex; gap: 2px; margin-right: 7px; vertical-align: -1px; }
+.pips i { width: 4px; height: 11px; border-radius: 1px; background: var(--pip, var(--line)); }
+.pips.p1 i:nth-child(-n+1), .pips.p2 i:nth-child(-n+2), .pips.p3 i:nth-child(-n+3), .pips.p4 i { background: currentColor; }
+
+/* nudge */
+.nudge { border-color: var(--buoy); }
+.nudge .btnrow { grid-template-columns: 1fr auto; align-items: center; }
+
+/* next swim */
+.hero { background: var(--pool); color: var(--pool-ink); border-radius: 18px; padding: 18px 18px 16px; margin-bottom: 20px; }
+.hero .eyebrow { color: var(--pool-muted); }
+.hero h1 { font: 700 46px/.95 var(--f-display); margin-top: 8px; text-wrap: balance; }
+.hero .chip { background: rgba(255,255,255,.1); margin-top: 10px; }
+.hero .meta { margin-top: 10px; color: var(--pool-muted); font-weight: 500; }
+.mini { margin: 14px 0 16px; border-top: 1px solid var(--pool-line); }
+.mini li { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; padding: 9px 0; border-bottom: 1px solid var(--pool-line); }
+.mini b { font: 700 26px/1 var(--f-display); letter-spacing: .01em; font-variant-numeric: tabular-nums; }
+.mini span { color: var(--pool-muted); font-size: 14px; }
+.hero .btn { background: var(--pop); border-color: var(--pop); color: var(--on-pop); }
+
+/* week */
+.wknav { display: grid; grid-template-columns: 44px 1fr 44px; align-items: center; gap: 8px; }
 .wkt { text-align: center; min-width: 0; }
 .phase { font: 600 12px var(--f-body); letter-spacing: .12em; text-transform: uppercase; color: var(--water); }
-.wkt h1 { font: 700 40px/1 var(--f-display); margin-top: 2px; }
-.wkt h1 span { font: 600 20px var(--f-display); color: var(--muted); }
-.step { width: 48px; height: 48px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); display: grid; place-items: center; color: var(--ink); }
+.wkt h2 { font: 700 34px/1 var(--f-display); margin-top: 2px; }
+.wkt h2 span { font: 600 18px var(--f-display); color: var(--muted); }
+.step { width: 44px; height: 44px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); display: grid; place-items: center; }
 .step:disabled { opacity: .35; cursor: default; }
-.dates { margin-top: 12px; text-align: center; color: var(--muted); font-size: 14px; display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 8px; align-items: center; }
-.pill { display: inline-block; padding: 2px 10px; border-radius: 99px; background: var(--water-soft); color: var(--water); font: 600 12px var(--f-body); letter-spacing: .04em; }
-.focus { margin: 12px auto 0; text-align: center; max-width: 34ch; text-wrap: balance; font-size: 17px; }
-.seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 16px 0 18px; }
-.seg i { height: 6px; border-radius: 3px; background: var(--line); }
-.seg i.on { background: var(--water); }
+.focus { margin: 10px auto 0; text-align: center; max-width: 36ch; text-wrap: balance; color: var(--muted); font-size: 15px; }
+.strip { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-top: 14px; }
+.dcell { display: grid; justify-items: center; gap: 2px; padding: 7px 0 8px; border-radius: 10px; border: 1px solid transparent; background: none; min-width: 0; }
+.dcell .dn { font: 600 11px var(--f-body); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.dcell .dd { font: 700 22px/1 var(--f-display); font-variant-numeric: tabular-nums; }
+.dcell .dot { width: 9px; height: 9px; border-radius: 50%; margin-top: 3px; border: 2px solid transparent; }
+.dcell.has { background: var(--surface); border-color: var(--line); }
+.dcell.has .dot { border-color: var(--t); }
+.dcell.done .dot { background: var(--t); }
+.dcell.today { border-color: var(--ink); }
+.vol { margin: 14px 0 12px; }
+.vol .bar { height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; }
+.vol .bar i { display: block; height: 100%; background: var(--water); border-radius: 3px; }
+.vol p { font-size: 13px; color: var(--muted); margin-top: 6px; font-variant-numeric: tabular-nums; }
+.srow { display: grid; grid-template-columns: 5px 1fr auto; gap: 12px; align-items: center; width: 100%; text-align: left; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px 12px 12px 0; margin-bottom: 8px; min-height: 64px; overflow: hidden; }
+.srow .stripe { align-self: stretch; margin-block: -12px; background: var(--t); }
+.srow .st { min-width: 0; }
+.srow .st b { display: block; font: 700 22px/1.1 var(--f-display); }
+.srow .st span { display: block; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.srow .state { display: flex; align-items: center; gap: 4px; font: 600 12px var(--f-body); color: var(--muted); white-space: nowrap; }
+.srow.done .state { color: var(--water); }
+.srow .state.miss { color: var(--buoy); }
+.srow.skip .st, .srow.skip .stripe { opacity: .5; }
+.dcell.skip .dot { border-style: dotted; opacity: .6; }
+.herolnk { color: var(--pool-muted); width: 100%; margin-top: 4px; }
+.btnrow.two { grid-template-columns: 1fr 1fr; margin-top: 10px; }
+.lnks { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0 12px; margin-top: 6px; }
+.edsteps { margin: 12px 0 4px; }
+.edsteps li { padding: 12px 0; border-top: 1px solid var(--line); display: grid; gap: 8px; }
+.edrow { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.edrow.b { grid-template-columns: minmax(0, 1fr) auto; align-items: end; }
+.edrow .rm { min-height: 48px; }
 
-/* session card */
-.card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; margin-bottom: 14px; }
-.card.is-done { border-color: var(--water); }
-.sh { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
-.sh > div { min-width: 0; }
-.day { font: 600 12px var(--f-body); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
-.sh h2 { font: 700 26px/1.05 var(--f-display); margin-top: 4px; text-wrap: balance; }
-.m { text-align: right; font: 700 32px/1 var(--f-display); font-variant-numeric: tabular-nums; white-space: nowrap; }
-.m small { display: block; font: 500 13px var(--f-body); color: var(--muted); margin-top: 3px; }
-.sets { list-style: none; margin: 14px 0 12px; padding: 0; border-top: 1px solid var(--line); }
-.sets li { display: grid; grid-template-columns: 62px 1fr; gap: 8px; align-items: baseline; padding: 9px 0; border-bottom: 1px solid var(--line); }
+/* workout detail */
+.back { display: inline-flex; align-items: center; gap: 2px; background: none; border: 0; min-height: 44px; padding: 0 8px 0 0; color: var(--muted); font-weight: 600; margin-top: 4px; }
+.detail h1 { font: 700 44px/.95 var(--f-display); margin-top: 10px; text-wrap: balance; }
+.detail .when { color: var(--muted); margin-top: 6px; }
+.facts { display: grid; grid-template-columns: repeat(3, 1fr); background: var(--surface); border: 1px solid var(--line); border-radius: 14px; margin: 16px 0; overflow: hidden; }
+.facts > div { padding: 12px 10px; border-right: 1px solid var(--line); min-width: 0; }
+.facts > div:last-child { border-right: 0; }
+.facts b { display: block; font: 700 28px/1 var(--f-display); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.facts span { display: block; font-size: 12px; color: var(--muted); margin-top: 4px; }
+.why { color: var(--muted); max-width: 60ch; margin-bottom: 16px; }
+.steps { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; margin-bottom: 14px; }
+.steps li { padding: 12px 14px 12px 16px; border-top: 1px solid var(--line); border-left: 5px solid transparent; }
+.steps li:first-child { border-top: 0; }
+.steps li.k-main, .steps li.k-race { border-left-color: var(--t); }
 .tag { font: 600 11px var(--f-body); letter-spacing: .14em; color: var(--muted); }
-.sets .main .tag { color: var(--buoy); }
-.what { min-width: 0; overflow-wrap: anywhere; }
-.what i { font-style: normal; color: var(--muted); margin-left: 8px; font-size: 14px; }
-.sets .main .what b { font: 700 28px/1 var(--f-display); letter-spacing: .01em; }
-.note { font-size: 14px; color: var(--muted); margin-bottom: 12px; }
-.tick { width: 100%; min-height: 48px; border-radius: 12px; border: 1.5px solid var(--buoy); background: var(--buoy); color: var(--on-buoy); font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; }
-.tick[aria-pressed="true"] { background: transparent; color: var(--water); border-color: var(--water); }
-.legend { font-size: 13px; color: var(--muted); padding-inline: 4px; }
+.steps .q { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; margin-top: 2px; }
+.steps .q b { font: 700 28px/1.05 var(--f-display); letter-spacing: .01em; font-variant-numeric: tabular-nums; }
+.steps .k-wu .q b, .steps .k-cd .q b { font-size: 22px; }
+.steps .lbl { color: var(--muted); font-size: 14px; }
+.steps .zl { display: flex; flex-wrap: wrap; gap: 2px 12px; margin-top: 4px; font-size: 14px; }
+.zone { font-weight: 600; white-space: nowrap; }
+.tgt { color: var(--muted); font-variant-numeric: tabular-nums; }
+.note { font-size: 14px; color: var(--muted); margin-bottom: 14px; padding-inline: 4px; }
+.result { border-color: var(--water); }
+.result .big { font: 700 30px/1 var(--f-display); font-variant-numeric: tabular-nums; }
+.reps { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.reps span { font: 600 13px var(--f-body); font-variant-numeric: tabular-nums; padding: 3px 8px; border-radius: 6px; background: var(--bg); border: 1px solid var(--line); }
+.move { margin-top: 6px; }
+.move p { font: 600 13px var(--f-body); color: var(--muted); margin-bottom: 6px; }
+.mvrow { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+.mv { min-height: 44px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); font: 600 12px var(--f-body); padding: 0; }
+.mv.cur { background: var(--water-soft); border-color: var(--water); color: var(--water); }
+.mv:disabled { opacity: .35; cursor: default; }
+
+/* forms */
+form.stack, .setup { display: grid; gap: 14px; }
+.fld { display: grid; gap: 4px; min-width: 0; }
+.fld > label, .fld > .lab { font: 600 13px var(--f-body); color: var(--muted); }
+.fld input[type=number], .fld input[type=date], .fld input[type=text], .fld select { width: 100%; min-height: 48px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); padding: 0 12px; font: 500 18px var(--f-body); }
+.row2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
+.fld input, .fld select { min-width: 0; max-width: 100%; }
+.fld input[type=date] { font-size: 16px; padding: 0 8px; }
+.chk { display: flex; align-items: center; gap: 10px; min-height: 44px; }
+.chk input { width: 22px; height: 22px; accent-color: var(--buoy); flex: none; }
+.chk label { font-size: 15px; font-weight: 500; }
+.opts { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 8px; }
+.days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+.feel { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; }
+.opt { position: relative; display: block; min-width: 0; }
+.opt input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+.opt span { display: flex; align-items: center; justify-content: center; text-align: center; min-height: 48px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); font-weight: 600; font-size: 15px; padding: 0 2px; }
+.days .opt span { min-height: 44px; font-size: 13px; }
+.feel .opt span { font-size: 12px; line-height: 1.15; }
+.opt input:checked + span { background: var(--water-soft); border-color: var(--water); color: var(--water); }
+.opt input:focus-visible + span { outline: 3px solid var(--buoy); outline-offset: 2px; }
+.hint { font-size: 13px; color: var(--muted); }
+.sum b { color: var(--ink); }
 
 /* plan */
 .phasehead { margin: 8px 0 4px; }
@@ -141,387 +278,1126 @@ b { font-weight: 600; }
 .weekrow .r em { font-style: normal; display: block; color: var(--ink); font-size: 15px; }
 .weekrow.now .n::after { content: ""; display: block; width: 6px; height: 6px; border-radius: 50%; background: var(--buoy); margin: 4px auto 0; }
 
-/* progress */
-.stats { display: grid; grid-template-columns: repeat(3, 1fr); padding: 0; overflow: hidden; }
-.stats > div { padding: 14px 12px; border-right: 1px solid var(--line); min-width: 0; }
-.stats > div:last-child { border-right: 0; }
-.stats .v { font: 700 34px/1 var(--f-display); font-variant-numeric: tabular-nums; }
-.stats .v small { font: 600 16px var(--f-display); color: var(--muted); }
-.stats .l { font-size: 12px; color: var(--muted); margin-top: 4px; letter-spacing: .04em; }
-.card h3 { font: 700 22px/1.1 var(--f-display); margin-bottom: 10px; }
+/* charts */
 svg.chart { width: 100%; height: auto; display: block; }
 .grid { stroke: var(--line); stroke-width: 1; fill: none; }
 .ax { fill: var(--muted); font: 500 10.5px var(--f-body); }
+.ax.cur { fill: var(--buoy); font-weight: 600; }
 .goal { stroke: var(--buoy); stroke-width: 1.5; stroke-dasharray: 4 4; fill: none; }
 .goalt { fill: var(--buoy); font: 600 10.5px var(--f-body); }
 .ln { fill: none; stroke: var(--water); stroke-width: 2; }
 .pt { fill: var(--water); stroke: var(--surface); stroke-width: 2; }
 .pt.ow { fill: var(--buoy); }
+.bp { fill: var(--line); }
+.bd { fill: var(--water); }
 .key { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 13px; color: var(--muted); margin-top: 8px; }
 .key span::before { content: ""; display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: var(--water); margin-right: 6px; }
 .key span.o::before { background: var(--buoy); }
+.key span.sq::before { border-radius: 2px; }
+.key span.pl::before { background: var(--line); border-radius: 2px; }
 .empty { font-size: 14px; color: var(--muted); margin-top: 8px; }
-.miles { list-style: none; margin: 0; padding: 0; }
+
+/* progress */
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); padding: 0; overflow: hidden; }
+.stats > div { padding: 14px 12px; border-right: 1px solid var(--line); min-width: 0; }
+.stats > div:last-child { border-right: 0; }
+.stats .v { font: 700 34px/1 var(--f-display); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.stats .v small { font: 600 16px var(--f-display); color: var(--muted); }
+.stats .l { font-size: 12px; color: var(--muted); margin-top: 4px; letter-spacing: .04em; }
+.bigline { font: 700 44px/1 var(--f-display); font-variant-numeric: tabular-nums; }
+.bigline small { font: 600 20px var(--f-display); color: var(--muted); margin-left: 6px; }
+.zt { margin: 12px 0 4px; border-top: 1px solid var(--line); }
+.zt li { display: grid; grid-template-columns: 110px 1fr auto; gap: 8px; align-items: baseline; padding: 9px 0; border-bottom: 1px solid var(--line); }
+.zt .zp { font: 700 22px/1 var(--f-display); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.zt .zc { font-size: 13px; color: var(--muted); min-width: 0; }
 .miles li { display: grid; grid-template-columns: 28px 1fr auto; gap: 10px; align-items: center; padding: 10px 0; border-top: 1px solid var(--line); }
 .miles li:first-child { border-top: 0; }
-.dot { width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--line); display: grid; place-items: center; }
-.miles li.ok .dot { background: var(--water); border-color: var(--water); color: var(--surface); }
+.dot2 { width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--line); display: grid; place-items: center; }
+.dot2 .ic { width: 14px; height: 14px; stroke-width: 3; }
+.miles li.ok .dot2 { background: var(--water); border-color: var(--water); color: var(--surface); }
 .miles .w { font: 500 13px var(--f-body); color: var(--muted); text-align: right; }
-form.log { display: grid; gap: 12px; }
-.fld { display: grid; gap: 4px; }
-.fld label, .chk label { font: 600 13px var(--f-body); color: var(--muted); }
-.fld input[type=number], .fld input[type=date] { width: 100%; min-height: 48px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); padding: 0 12px; font: 500 18px var(--f-body); }
-.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.chk { display: flex; align-items: center; gap: 10px; min-height: 44px; }
-.chk input { width: 22px; height: 22px; accent-color: var(--buoy); }
-.chk label { font-size: 15px; color: var(--ink); font-weight: 500; }
-.err { color: var(--buoy); font-size: 14px; min-height: 0; }
-.entries { list-style: none; margin: 0; padding: 0; }
 .entries li { display: grid; grid-template-columns: 1fr auto auto; gap: 10px; align-items: center; padding: 8px 0; border-top: 1px solid var(--line); }
+.entries li:first-child { border-top: 0; }
 .entries .md { font: 700 22px var(--f-display); font-variant-numeric: tabular-nums; }
 .entries .dd { font-size: 13px; color: var(--muted); }
-.entries .tg { font: 600 11px var(--f-body); letter-spacing: .08em; color: var(--buoy); text-transform: uppercase; }
+.entries .tg { font: 600 12px var(--f-body); color: var(--muted); text-align: right; font-variant-numeric: tabular-nums; }
+.entries .tg.o { color: var(--buoy); letter-spacing: .06em; text-transform: uppercase; font-size: 11px; }
 .rm { min-height: 40px; min-width: 40px; border: 0; background: none; color: var(--muted); border-radius: 8px; font-size: 13px; text-decoration: underline; }
 
 /* race */
-.tips { list-style: none; margin: 0; padding: 0; }
 .tips li { padding: 12px 0; border-top: 1px solid var(--line); }
 .tips li:first-child { border-top: 0; }
 .tips b { display: block; font: 700 20px/1.1 var(--f-display); margin-bottom: 2px; }
 .tips span { color: var(--muted); font-size: 15px; }
-.big { font: 700 44px/1 var(--f-display); }
-.cardp { color: var(--muted); margin-top: 6px; font-size: 15px; }
 .cardp a { color: var(--water); }
+.cps { display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; margin-top: 12px; }
+.cps div { padding: 10px 8px; border-right: 1px solid var(--line); min-width: 0; }
+.cps div:last-child { border-right: 0; }
+.cps b { display: block; font: 700 22px/1 var(--f-display); font-variant-numeric: tabular-nums; }
+.cps span { font-size: 12px; color: var(--muted); }
 
 /* tabs */
-.tabs { position: fixed; left: 0; right: 0; bottom: 0; background: var(--surface); border-top: 1px solid var(--line); padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px)); }
-.tabs .in { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; max-width: 560px; margin-inline: auto; }
-.tabs button { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; background: none; border: 0; color: var(--muted); font: 600 12px var(--f-body); min-height: 52px; border-radius: 10px; }
+.tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 5; background: var(--surface); border-top: 1px solid var(--line); padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px)); }
+.tabs .in { display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; max-width: 560px; margin-inline: auto; }
+.tabs button { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; background: none; border: 0; color: var(--muted); font: 600 11.5px var(--f-body); min-height: 52px; border-radius: 10px; padding-inline: 2px; }
 .tabs button[aria-current="page"] { color: var(--water); background: var(--water-soft); }
-.ic { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-@media (prefers-reduced-motion: reduce) { * { transition: none !important; scroll-behavior: auto !important; } }
-@media (max-width: 360px) { .count { font-size: 52px; } .stats .v { font-size: 28px; } }
-</style>
 
+/* guided workout: the pace clock */
+.player { --pip: var(--pool-line); position: fixed; inset: 0; z-index: 20; background: var(--pool); color: var(--pool-ink); display: flex; flex-direction: column; overflow-y: auto; padding: calc(10px + env(safe-area-inset-top, 0px)) 20px calc(16px + env(safe-area-inset-bottom, 0px)); }
+.player .in { width: 100%; max-width: 520px; margin-inline: auto; flex: 1; display: flex; flex-direction: column; min-height: 0; }
+.plbar { display: grid; grid-template-columns: 44px 1fr auto; align-items: center; gap: 8px; }
+.plbtn { min-width: 44px; min-height: 44px; border-radius: 12px; border: 1px solid var(--pool-line); background: none; color: var(--pool-ink); display: grid; place-items: center; font: 600 13px var(--f-body); padding: 0 10px; }
+.plprog { text-align: center; font: 600 13px var(--f-body); letter-spacing: .1em; text-transform: uppercase; color: var(--pool-muted); }
+.pltrack { height: 4px; border-radius: 2px; background: var(--pool-line); margin-top: 10px; overflow: hidden; }
+.pltrack i { display: block; height: 100%; background: var(--pop); }
+.plbody { flex: 1; display: flex; flex-direction: column; justify-content: center; text-align: center; padding-block: 16px; min-height: 0; }
+.plk { font: 600 13px var(--f-body); letter-spacing: .14em; text-transform: uppercase; color: var(--pool-muted); }
+.plk b { color: var(--t, var(--pop)); font-weight: 600; }
+.plclock { font: 700 clamp(96px, 34vw, 176px)/.9 var(--f-display); font-variant-numeric: tabular-nums; letter-spacing: -.01em; margin-block: 6px 10px; }
+.plclock.rest { color: var(--pop); }
+.pldist { font: 700 clamp(64px, 22vw, 104px)/.95 var(--f-display); margin-block: 8px 6px; font-variant-numeric: tabular-nums; }
+.plset { font: 700 30px/1.05 var(--f-display); }
+.plz { font-size: 17px; font-weight: 600; margin-top: 6px; }
+.plcue { color: var(--pool-muted); margin: 8px auto 0; max-width: 32ch; text-wrap: balance; }
+.plmain { width: 100%; min-height: 96px; border-radius: 20px; border: 0; background: var(--pop); color: var(--on-pop); font: 700 38px var(--f-display); letter-spacing: .03em; text-transform: uppercase; }
+.plmain.alt { background: none; border: 2px solid var(--pool-ink); color: var(--pool-ink); }
+.plmain:focus-visible, .plbtn:focus-visible, .plmini:focus-visible { outline: 3px solid var(--pool-ink); outline-offset: 2px; }
+.plfoot { display: flex; justify-content: space-between; margin-top: 8px; }
+.plmini { background: none; border: 0; color: var(--pool-muted); min-height: 44px; padding: 0 6px; font-weight: 600; font-size: 14px; }
+.plmini:disabled { opacity: .35; }
+.plconfirm { border: 1px solid var(--pool-line); border-radius: 14px; padding: 14px; margin-top: 12px; text-align: left; }
+.plconfirm p { margin-bottom: 12px; }
+.plconfirm .btnrow { grid-template-columns: 1fr 1fr; margin-top: 0; }
+.plconfirm .btn { background: var(--pop); border-color: var(--pop); color: var(--on-pop); }
+.plconfirm .btn.ghost { background: none; border-color: var(--pool-line); color: var(--pool-ink); }
+.plsum { text-align: center; padding-block: 18px 14px; }
+.plsum .plclock { font-size: clamp(72px, 24vw, 120px); }
+.plsum .reps { justify-content: center; }
+.plsum .reps span { background: none; border-color: var(--pool-line); }
+.plsheet { background: var(--surface); color: var(--ink); border-radius: 16px; padding: 16px; }
+.plsheet h3 { font: 700 22px/1.1 var(--f-display); }
+.plsheet .lnk { width: 100%; }
+
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; scroll-behavior: auto !important; } }
+@media (max-width: 360px) { .count { font-size: 52px; } .stats .v { font-size: 28px; } .facts b { font-size: 24px; } .hero h1, .detail h1 { font-size: 38px; } }
+</style>
+<meta name="theme-color" content="#0E3F37">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Midmar Trainer">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+</head>
+<body>
 <div class="wrap">
   <header class="top" id="hd"></header>
-  <div class="rope" aria-hidden="true"></div>
+  <div class="rope" id="rope" aria-hidden="true"></div>
   <main id="view"></main>
 </div>
 <nav class="tabs" aria-label="Sections"><div class="in">
-  <button data-act="tab" data-tab="week"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Week</button>
-  <button data-act="tab" data-tab="plan"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>Plan</button>
+  <button data-act="tab" data-tab="today"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 16c2 0 2-2 4-2s2 2 4 2 2-2 4-2 2 2 4 2 2-2 4-2M2 20c2 0 2-2 4-2s2 2 4 2 2-2 4-2 2 2 4 2 2-2 4-2"/><circle cx="16" cy="6" r="2"/><path d="M4 12l5-4 4 3"/></svg>Today</button>
+  <button data-act="tab" data-tab="plan"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Plan</button>
   <button data-act="tab" data-tab="progress"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 20h18M6 16l4-5 4 3 5-8"/></svg>Progress</button>
   <button data-act="tab" data-tab="race"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 21V4M5 4h11l-2 4 2 4H5"/></svg>Race</button>
+  <button data-act="tab" data-tab="setup"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h9M18 6h3M3 12h3M12 12h9M3 18h11M20 18h1"/><circle cx="15" cy="6" r="2.5"/><circle cx="9" cy="12" r="2.5"/><circle cx="17" cy="18" r="2.5"/></svg>Setup</button>
 </div></nav>
+<div id="player" class="player onpool" role="dialog" aria-modal="true" aria-label="Guided workout" hidden></div>
 
 <script>
-(function () {
+(() => {
   'use strict';
-  var DAY = 864e5, N = 19;
-  var KEY = 'midmar-trainer-v1';
-  var START = new Date(2026, 9, 5);   // Monday 5 Oct 2026, week 1
-  var RACE = new Date(2027, 1, 13);   // Saturday 13 Feb 2027
-  var MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  var DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-  var OFF = [0, 2, 5]; // Mon, Wed, Sat
+  const DAY = 864e5, OW_GOAL = 4;
+  const KEY = 'midmar-trainer-v2', OLD_KEY = 'midmar-trainer-v1', SND_KEY = 'midmar-trainer-sound';
+  const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const DEF = { start: '2026-10-05', race: '2027-02-13', level: 200, perWeek: 3, days: [1, 3, 6], pool: 25, peak: 2000, setup: false };
+  const PRESETS = { 2: [3, 6], 3: [1, 3, 6], 4: [1, 2, 4, 6] };
+  const ISO_RE = /^\d{4}-\d{2}-\d{2}$/;
+  const TABS = ['today', 'plan', 'progress', 'race', 'setup'];
 
-  function num(n) { return String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ' '); }
-  function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
-  function addDays(d, n) { return new Date(d.getFullYear(), d.getMonth(), d.getDate() + n); }
-  function today() { var n = new Date(); return new Date(n.getFullYear(), n.getMonth(), n.getDate()); }
-  function iso(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
-  function parseISO(s) { var p = s.split('-').map(Number); return new Date(p[0], p[1] - 1, p[2]); }
-  function fmtS(d) { return d.getDate() + ' ' + MON[d.getMonth()]; }
-  function fmtD(d) { return DOW[d.getDay()] + ' ' + fmtS(d); }
-  function wsOf(w) { return addDays(START, w * 7); }
+  const TYPES = {
+    tech: { name: 'Technique', c: 'tech', why: 'Smooth technique makes every metre cheaper. Swim these slowly and think about one thing at a time.' },
+    build: { name: 'Intervals', c: 'int', why: 'Short repeats with rest let you cover more distance than you could non-stop. That builds your base.' },
+    thr: { name: 'Threshold', c: 'int', why: 'Threshold reps teach you to hold a strong pace without fading. Swim every rep at the same speed.' },
+    pyr: { name: 'Pyramid', c: 'int', why: 'A pyramid mixes distances so you practise pacing. Start controlled and keep the long middle swim steady.' },
+    speed: { name: 'Speed', c: 'speed', why: 'Short, fast reps sharpen your feel for the water and make your steady pace feel easier.' },
+    easy: { name: 'Easy', c: 'easy', why: 'Easy metres build endurance without tiring you out for the long swim.' },
+    long: { name: 'Long swim', c: 'long', why: 'The long swim is the heart of the plan. It builds the endurance and the confidence to cover 1.6 km.' },
+    tt: { name: 'Time trial', c: 'tt', why: 'A timed swim shows where your fitness is and sets your target paces for the next block.' },
+    race: { name: 'Race', c: 'race', why: 'This is what the plan was for. Start steady, find clear water, and build through the second half.' }
+  };
+  const ZONES = {
+    easy: { name: 'Easy', f: 1.10, lvl: 1, cue: 'Relaxed. You could chat at the wall.' },
+    steady: { name: 'Steady', f: 1.04, lvl: 2, cue: 'Controlled, with rhythmic breathing.' },
+    thr: { name: 'Threshold', f: 1.00, lvl: 3, cue: 'Hard but repeatable.' },
+    fast: { name: 'Fast', f: 0.94, lvl: 4, cue: 'Strong, just short of a sprint.' },
+    max: { name: 'Best effort', f: 0.97, lvl: 4, cue: 'As fast as you can hold evenly.' }
+  };
+  const FEEL = ['Easy', 'Comfy', 'Solid', 'Hard', 'All out'];
+  const DRILLS = [
+    ['Side-kick drill', 'Kick on your side with the lower arm out front and your face down. Roll to breathe.'],
+    ['Catch-up drill', 'One arm waits out front until the other hand touches it.'],
+    ['Fingertip drag', 'Drag your fingertips along the surface on each recovery to keep your elbows high.'],
+    ['6-kick switch', 'Six kicks on one side, one stroke, then six kicks on the other side.'],
+    ['Breathe every 3', 'Breathe on every third stroke so you use both sides.'],
+    ['Sighting practice', 'Lift your eyes forward every sixth stroke, then roll to breathe.']
+  ];
+  const KIND = { wu: 'Warm up', drill: 'Drill', main: 'Main set', cd: 'Cool down', race: 'Race' };
 
-  /* ---------- the plan ---------- */
-  function sess(title, o) {
-    o = Object.assign({ wu: 100, cd: 50, drill: false, main: [], cont: 0, note: '' }, o);
-    var lines = [{ tag: 'WU', txt: num(o.wu) + ' m easy' }];
-    var m = o.wu + o.cd;
-    if (o.drill) { lines.push({ tag: 'DRILL', txt: '4 × 25 m side-kick drill', sub: 'rest 15 s' }); m += 100; }
-    o.main.forEach(function (a) { lines.push({ tag: 'MAIN', n: a[0], d: a[1], rest: a[2], x: a[3] || '' }); m += a[0] * a[1]; });
-    if (o.cont) { lines.push({ tag: 'MAIN', cont: o.cont }); m += o.cont; }
-    lines.push({ tag: 'CD', txt: num(o.cd) + ' m easy' });
-    return { title: title, lines: lines, metres: m, note: o.note };
+  const $ = id => document.getElementById(id);
+  const num = n => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const addDays = (d, n) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
+  const today = () => { const n = new Date(); return new Date(n.getFullYear(), n.getMonth(), n.getDate()); };
+  const iso = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  const parseISO = s => { const p = s.split('-').map(Number); return new Date(p[0], p[1] - 1, p[2]); };
+  const mondayOf = d => addDays(d, -((d.getDay() + 6) % 7));
+  const fmtS = d => d.getDate() + ' ' + MON[d.getMonth()];
+  const fmtD = d => DOW[d.getDay()] + ' ' + fmtS(d);
+  const fmtY = d => fmtS(d) + ' ' + d.getFullYear();
+  const fmtDist = a => a >= 1000 ? (Math.round(a / 10) / 100) + ' km' : num(a) + ' m';
+  const weeksBetween = (start, race) => Math.floor(Math.round((race - start) / DAY) / 7);
+  const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  const byDate = (x, y) => x.date < y.date ? -1 : x.date > y.date ? 1 : 0;
+  function fmtT(s) {
+    s = Math.max(0, Math.round(s));
+    const h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), x = s % 60;
+    return (h ? h + ':' + String(m).padStart(2, '0') : m) + ':' + String(x).padStart(2, '0');
   }
-  function T(main, o) { return sess('Breathing and technique', Object.assign({ drill: true, main: main }, o)); }
-  function I(main, o) { return sess('Intervals', Object.assign({ main: main }, o)); }
-  function L(x, o) { return sess((o && o.title) || 'Long swim', Object.assign(Array.isArray(x) ? { main: x } : { cont: x }, o)); }
-  var P2 = { wu: 200, cd: 100 };
-  function E(o) { return Object.assign({}, P2, o); }
-  var OW1 = 'First open-water swim. Swim 10 to 15 minutes easy with a buddy, close to the shore, then finish the distance in the pool.';
-  var OW = 'Do this one in open water, in a dam or the sea, with a buddy and close to the shore. Never swim alone. Use the pool if conditions are unsafe.';
-  var EASY = { title: 'Easy volume' };
+  function fmtMin(s) { const m = Math.max(1, Math.round(s / 60)); return m < 60 ? m + ' min' : Math.floor(m / 60) + ' h ' + String(m % 60).padStart(2, '0'); }
+  function parseT(str) {
+    const m = /^\s*(?:(\d{1,2}):)?(\d{1,3}):([0-5]\d)\s*$/.exec(str || '');
+    return m ? (+(m[1] || 0)) * 3600 + (+m[2]) * 60 + (+m[3]) : NaN;
+  }
+  const pips = n => `<span class="pips p${n}" aria-hidden="true"><i></i><i></i><i></i><i></i></span>`;
 
-  var PLAN = [
-    { p: 0, f: 'Get comfortable. Short reps and relaxed breathing.', s: [T([[8, 50, 30]]), I([[6, 75, 30]]), L([[10, 50, 25]], EASY)] },
-    { p: 0, f: 'Same distances with shorter rests.', s: [T([[8, 50, 25]]), I([[5, 100, 40]]), L([[12, 50, 20]], EASY)] },
-    { p: 0, f: 'Longer reps, 75 to 100 m.', s: [T([[6, 75, 25]]), I([[6, 100, 40]]), L([[8, 75, 20]], EASY)] },
-    { p: 0, f: 'Check-in week. Lighter sets, then a 200 m non-stop test.', s: [T([[6, 75, 20]]), I([[4, 100, 30]]), L(200, { title: 'Test swim', note: 'Swim 200 m without stopping at an easy pace. Log how far you get on the Progress tab. Stopping early is fine, it shows where you are.' })] },
-    { p: 0, f: 'Step up to 150 m reps.', s: [T([[4, 100, 25]]), I([[5, 100, 30]]), L([[3, 150, 30]], EASY)] },
-    { p: 0, f: '200 m reps. Keep strokes long and smooth.', s: [T([[4, 100, 20]]), I([[4, 150, 30]]), L([[3, 200, 40]], EASY)] },
-    { p: 0, f: '250 m swims. Breathing should start to feel automatic.', s: [T([[3, 150, 20]]), I([[3, 200, 30]]), L([[2, 250, 40]], EASY)] },
-    { p: 0, f: 'Milestone week: 400 m non-stop.', s: [T([[3, 150, 20]]), I([[4, 200, 30]]), L(400, { title: 'Milestone swim', note: 'Swim 400 m without stopping. If you feel good at 400, keep going to 500. Log the result.' })] },
-
-    { p: 1, f: 'Build the long swim. 500 m non-stop.', s: [T([[3, 200, 20]], P2), I([[5, 200, 30]], P2), L(500, P2)] },
-    { p: 1, f: '600 m non-stop. Keep the breathing steady.', s: [T([[3, 200, 20]], P2), I([[6, 200, 30]], P2), L(600, P2)] },
-    { p: 1, f: '800 m non-stop. Start open-water swims this week.', s: [T([[4, 150, 15]], P2), I([[6, 200, 25]], P2), L(800, E({ note: OW1 }))] },
-    { p: 1, f: 'Recovery week. Lower volume, same technique.', s: [T([[4, 150, 15]], P2), I([[5, 200, 30]], P2), L(700, P2)] },
-    { p: 1, f: '1 km non-stop. Second open-water swim.', s: [T([[3, 200, 15]], P2), I([[6, 200, 25]], P2), L(1000, E({ note: OW }))] },
-    { p: 1, f: '1.2 km. Practise looking forward every 6 to 8 strokes.', s: [T([[4, 200, 15]], P2), I([[4, 300, 30]], P2), L(1200, E({ note: OW + ' Practise sighting: lift your eyes, find a landmark, then breathe.' }))] },
-    { p: 1, f: '1.5 km, close to race distance.', s: [T([[4, 200, 15]], P2), I([[5, 300, 30]], P2), L(1500, E({ note: OW }))] },
-    { p: 1, f: 'Recovery week. Lower volume.', s: [T([[3, 200, 15]], P2), I([[4, 300, 30]], P2), L(1200, P2)] },
-    { p: 1, f: 'Milestone week: 2 km non-stop.', s: [T([[4, 200, 15]], P2), I([[4, 400, 30]], P2), L(2000, E({ title: 'Milestone swim', note: '2 km is 400 m more than the race. Log it. Open water is better if you can.' }))] },
-
-    { p: 2, f: 'Taper. Less volume, same sharpness.', s: [T([[4, 100, 20]], P2), I([[4, 200, 30]], P2), L(1300, P2)] },
-    { p: 2, f: 'Race week. Stay loose and rest.', s: [
-      sess('Easy swim', { wu: 200, cd: 100, main: [[4, 50, 30, 'quick']] }),
-      sess('Shake-out', { wu: 200, cd: 100, main: [[4, 25, 30, 'fast']] }),
-      { title: 'Race day', race: true, metres: 1600, lines: [{ tag: 'RACE', txt: '1.6 km open water at Midmar Dam' }], note: 'The Midmar Mile runs on 13 and 14 February. Check your entry for the day and wave you swim, and tick this off then. Use the same goggles you trained in.' }
-    ] }
-  ];
-  var PH = [
-    { name: 'Base', range: 'Weeks 1 to 8', goal: 'Swim 400 m without stopping' },
-    { name: 'Endurance', range: 'Weeks 9 to 17', goal: 'Build to 2 km non-stop' },
-    { name: 'Taper', range: 'Weeks 18 and 19', goal: 'Rest up and race' }
-  ];
-  var MILES = [[400, 8], [800, 11], [1200, 14], [1600, 17], [2000, 17]];
-  var OW_GOAL = 4;
-  var TOTAL_SESS = PLAN.reduce(function (a, p) { return a + p.s.length; }, 0);
-
-  /* ---------- state ---------- */
-  function norm(j) {
-    var o = { done: {}, log: [] };
-    if (j && typeof j === 'object') {
-      if (j.done && typeof j.done === 'object') {
-        Object.keys(j.done).forEach(function (k) {
-          var m = /^(\d+)-(\d)$/.exec(k);
-          if (m && +m[1] < N && typeof j.done[k] === 'string') o.done[k] = j.done[k];
-        });
-      }
-      if (Array.isArray(j.log)) {
-        o.log = j.log.filter(function (e) { return e && typeof e.m === 'number' && typeof e.date === 'string' && typeof e.id === 'string'; })
-          .map(function (e) { return { id: e.id, date: e.date, m: e.m, ow: !!e.ow }; });
-      }
-    }
-    o.log.sort(function (a, b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : 0; });
+  /* ---------- config ---------- */
+  function validRace(cfg) {
+    const rw = weeksBetween(mondayOf(parseISO(cfg.start)), parseISO(cfg.race));
+    return rw >= 5 && rw <= 39;
+  }
+  function normCfg(c) {
+    c = c && typeof c === 'object' ? c : {};
+    const o = {};
+    o.start = ISO_RE.test(c.start) ? c.start : DEF.start;
+    o.race = ISO_RE.test(c.race) ? c.race : DEF.race;
+    o.level = isFinite(c.level) ? Math.min(2400, Math.max(0, Math.round(c.level))) : DEF.level;
+    o.perWeek = [2, 3, 4].includes(c.perWeek) ? c.perWeek : DEF.perWeek;
+    const dd = Array.isArray(c.days) ? c.days.filter((x, i, a) => x >= 0 && x <= 6 && x % 1 === 0 && a.indexOf(x) === i) : [];
+    o.days = dd.length === o.perWeek ? dd.slice().sort((a, b) => a - b) : PRESETS[o.perWeek].slice();
+    o.pool = c.pool === 50 ? 50 : 25;
+    o.peak = [1600, 2000, 2400].includes(c.peak) ? c.peak : DEF.peak;
+    o.setup = !!c.setup;
+    if (!validRace(o)) { o.start = DEF.start; o.race = DEF.race; }
     return o;
   }
-  var state;
-  try { state = norm(JSON.parse(localStorage.getItem(KEY) || 'null')); } catch (e) { state = norm(null); }
-  var tab = 'week';
-  function curWeek() { var t = today(); return Math.min(N - 1, Math.max(0, Math.floor(Math.round((t - START) / DAY) / 7))); }
-  var wk = curWeek();
+  const startLong = cfg => Math.min(cfg.peak, Math.max(100, cfg.level >= 400 ? cfg.level * 0.8 : cfg.level));
 
-  var ref = null, timer = 0, chain = Promise.resolve();
+  /* ---------- plan generator ---------- */
+  function buildPlan(cfg) {
+    const pool = cfg.pool, PEAK = cfg.peak;
+    const start = mondayOf(parseISO(cfg.start)), race = parseISO(cfg.race);
+    const raceWeek = weeksBetween(start, race), W = raceWeek + 1, Tn = W - 2;
+    const raceOff = Math.round((race - addDays(start, raceWeek * 7)) / DAY);
+    const offs = cfg.days.map(d => (d + 6) % 7).sort((a, b) => a - b);
+
+    const stp = v => pool === 50 ? 50 : (v < 500 ? 25 : 50);
+    const rnd = (x, s) => Math.max(s, Math.round(x / s) * s);
+    const restFor = p => Math.max(15, Math.round((40 - 20 * p) / 5) * 5);
+    const repDist = x => { const d = x < 150 ? 50 : x < 300 ? 75 : x < 500 ? 100 : x < 1400 ? 200 : x < 1800 ? 300 : 400; return Math.max(pool, Math.ceil(d / pool) * pool); };
+    const wc = a => a < 1000 ? [100, 50] : [200, 100];
+    const S = (kind, reps, dist, zone, rest, label) => ({ kind, reps, dist, zone, rest: rest || 0, label: label || '' });
+    const mk = (type, title, steps, extra) => Object.assign({ type, title, steps, note: '' }, extra || {});
+    const drillOf = t => DRILLS[t % DRILLS.length];
+
+    function tech(t, a, p) {
+      const [w, c] = wc(a), total = Math.min(800, 0.5 * a + 250), d = repDist(a * 0.5), dr = drillOf(t);
+      return mk('tech', 'Technique', [S('wu', 1, w, 'easy'), S('drill', 4, pool, 'easy', 15, dr[0]),
+        S('main', Math.max(2, Math.round(total / d)), d, 'easy', Math.max(15, restFor(p) - 5), 'long, smooth strokes'), S('cd', 1, c, 'easy')], { note: dr[0] + ': ' + dr[1] });
+    }
+    function build(a, p) {
+      const [w, c] = wc(a), total = Math.min(1600, 1.2 * a + 300), d = repDist(a);
+      return mk('build', 'Build intervals', [S('wu', 1, w, 'easy'), S('main', Math.max(2, Math.round(total / d)), d, 'steady', restFor(p)), S('cd', 1, c, 'easy')]);
+    }
+    function thr(a, p) {
+      const [w, c] = wc(a), total = Math.min(1600, 1.2 * a + 300), d = repDist(a);
+      return mk('thr', 'Threshold reps', [S('wu', 1, w, 'easy'), S('main', Math.max(2, Math.round(total / d)), d, 'thr', Math.max(20, restFor(p))), S('cd', 1, c, 'easy')]);
+    }
+    function speed(a) {
+      const [w, c] = wc(a), n = Math.min(16, Math.max(8, Math.round((0.5 * a + 200) / 50)));
+      return mk('speed', 'Speed set', [S('wu', 1, w, 'easy'), S('drill', 4, pool, 'steady', 15, 'build each length'),
+        S('main', n, 50, 'fast', 30), S('main', 1, 200, 'easy', 0, 'loosen off'), S('cd', 1, c, 'easy')]);
+    }
+    function pyr(a) {
+      const [w, c] = wc(a), ds = a >= 1400 ? [100, 200, 300, 400, 300, 200, 100] : [100, 200, 300, 200, 100];
+      return mk('pyr', 'Pyramid', [S('wu', 1, w, 'easy')].concat(ds.map(d => S('main', 1, d, 'steady', 20)), [S('cd', 1, c, 'easy')]), { ladder: ds });
+    }
+    function trial(a) {
+      const [w] = wc(a), d = a >= 400 ? 400 : a >= 200 ? 200 : 100, dd = repDist(a * 0.5);
+      return mk('tt', 'Time trial', [S('wu', 1, w, 'easy'), S('drill', 4, pool, 'steady', 20, 'build each length'), S('main', 1, d, 'max', 0, 'timed'),
+        S('main', Math.max(2, Math.round(0.6 * a / dd)), dd, 'easy', 20, 'aerobic'), S('cd', 1, 100, 'easy')],
+        { tt: d, note: 'Push off from the wall, no dive. Swim the ' + d + ' m evenly and check your time as you touch.' });
+    }
+    function longS(a, p, title, note, ow) {
+      const [w, c] = wc(a);
+      if (a >= 400) return mk('long', title || 'Long swim', [S('wu', 1, w, 'easy'), S('main', 1, a, 'easy', 0, 'non-stop'), S('cd', 1, c, 'easy')], { cont: a, note: note || '', ow: !!ow });
+      const d = Math.max(pool, rnd(a * 0.5, pool)), n = Math.max(3, Math.ceil(a * 2.5 / d));
+      return mk('long', title || 'Endurance set', [S('wu', 1, w, 'easy'), S('main', n, d, 'easy', restFor(p)), S('cd', 1, c, 'easy')], { note: note || '' });
+    }
+    function easyS(a, p) {
+      const ev = rnd(a * 0.6, stp(a * 0.6)), [w, c] = wc(ev);
+      if (ev >= 400) return mk('easy', 'Easy swim', [S('wu', 1, w, 'easy'), S('main', 1, ev, 'easy', 0, 'non-stop'), S('cd', 1, c, 'easy')]);
+      const d = Math.max(pool, rnd(ev * 0.5, pool)), n = Math.max(3, Math.ceil(ev * 2.5 / d));
+      return mk('easy', 'Easy swim', [S('wu', 1, w, 'easy'), S('main', n, d, 'easy', restFor(p)), S('cd', 1, c, 'easy')]);
+    }
+    function lineup(t, a, p, o) {
+      const L = longS(a, p, o.title, o.note, o.ow);
+      const Q = o.q === 'tt' ? trial(a) : o.q === 'thr' ? thr(a, p) : o.q === 'speed' ? speed(a) : o.q === 'pyr' ? pyr(a) : o.q === 'rp'
+        ? mk('thr', 'Race-pace reps', [S('wu', 1, 200, 'easy'), S('main', 4, 200, 'thr', 30), S('cd', 1, 100, 'easy')]) : build(a, p);
+      if (cfg.perWeek === 2) {
+        if (!Q.steps.some(s => s.kind === 'drill')) { const dr = drillOf(t); Q.steps.splice(1, 0, S('drill', 4, pool, 'easy', 15, dr[0])); Q.note = dr[0] + ': ' + dr[1]; }
+        return [Q, L];
+      }
+      return cfg.perWeek === 3 ? [tech(t, a, p), Q, L] : [tech(t, a, p), Q, easyS(a, p), L];
+    }
+
+    /* long-swim ladder: geometric growth, a lighter week every 4th week */
+    const a0 = startLong(cfg);
+    const a = [], rec = [], bv = [];
+    for (let t = 0; t < Tn; t++) {
+      const prog = Tn > 1 ? t / (Tn - 1) : 1;
+      bv[t] = a0 * Math.pow(PEAK / a0, prog);
+      rec[t] = (t % 4 === 3 && t < Tn - 1);
+      const v = rec[t] ? bv[t] * 0.75 : bv[t];
+      a[t] = rnd(v, stp(v));
+    }
+    let m4 = -1;
+    if (cfg.level < 400) for (let t = 0; t < Tn; t++) { if (!rec[t] && a[t] >= 400) { m4 = t; break; } }
+
+    /* open-water weeks, spread over the weeks where the long swim is 800 m or more */
+    const cand = [], owAt = {};
+    for (let t = 0; t < Tn; t++) if (!rec[t] && a[t] >= 800) cand.push(t);
+    const picks = cand.length <= OW_GOAL ? cand.map((_, i) => i) : [0, 1, 2, 3].map(i => Math.round(i * (cand.length - 1) / 3));
+    picks.forEach((ci, i) => { owAt[cand[ci]] = i; });
+    const OW1 = 'First open-water swim. Swim 10 to 15 minutes easy with a buddy, close to the shore, then finish the distance in the pool.';
+    const OW = 'Do this one in open water, in a dam or the sea, with a buddy and close to the shore. Never swim alone. Use the pool if conditions are unsafe.';
+    const SIGHT = ' Practise sighting: lift your eyes, find a landmark, then breathe.';
+
+    const codes = [], weeks = [];
+    const phaseIdx = code => { let i = codes.indexOf(code); if (i < 0) { codes.push(code); i = codes.length - 1; } return i; };
+    let qi = 0;
+    for (let t = 0; t < Tn; t++) {
+      const prog = Tn > 1 ? t / (Tn - 1) : 1;
+      let title = null, note = '', f;
+      const code = bv[t] < 400 ? 'base' : 'end';
+      if (t === Tn - 1) { title = 'Milestone swim'; note = PEAK > 1600 ? fmtDist(PEAK) + ' is ' + (PEAK - 1600) + ' m more than the race.' : 'This is the full race distance.'; f = 'Milestone week: ' + fmtDist(PEAK) + ' non-stop.'; }
+      else if (t === m4) { title = 'Milestone swim'; note = 'Your first ' + num(a[t]) + ' m without stopping. If you feel good at the end, keep going a little further.'; f = 'Milestone week: ' + num(a[t]) + ' m non-stop.'; }
+      else if (rec[t]) f = 'Recovery week. Lower volume, and a time trial to reset your paces.';
+      else if (a[t] < 400) f = 'Build with short reps. Focus on relaxed breathing.';
+      else f = fmtDist(a[t]) + ' non-stop.';
+      let ow = false;
+      if (owAt[t] !== undefined) {
+        const on = owAt[t] === 0 ? OW1 : OW + (owAt[t] === 2 ? SIGHT : '');
+        note = note ? note + ' ' + on : on; ow = true;
+        f += ' Open-water swim this week.';
+      }
+      let q;
+      if (rec[t] || (t === 0 && cfg.level >= 100)) q = 'tt';
+      else if (bv[t] < 400) q = 'build';
+      else { q = ['thr', 'speed', 'pyr'][qi % 3]; if (q === 'pyr' && a[t] < 600) q = 'thr'; qi++; }
+      if (t === 0 && q === 'tt') f = 'Start with a time trial to set your paces.';
+      weeks.push({ p: phaseIdx(code), f, rec: rec[t], long: a[t], s: lineup(t, a[t], prog, { title, note, ow, q }) });
+    }
+    /* taper week */
+    const at = rnd(PEAK * 0.65, stp(PEAK * 0.65));
+    weeks.push({ p: phaseIdx('taper'), f: 'Taper. Less volume, same sharpness.', rec: false, long: at, s: lineup(Tn, at, 1, { q: 'rp' }) });
+    /* race week */
+    const pre = offs.filter(o => o <= raceOff - 2).slice(-2);
+    const rs = pre.map((o, i) => i === 0 && pre.length === 2
+      ? mk('easy', 'Easy swim', [S('wu', 1, 200, 'easy'), S('main', 4, 50, 'fast', 30, 'quick, not flat out'), S('cd', 1, 100, 'easy')])
+      : mk('easy', 'Shake-out', [S('wu', 1, 200, 'easy'), S('main', 4, pool, 'fast', 30), S('cd', 1, 100, 'easy')]));
+    rs.push(mk('race', 'Race day', [S('race', 1, 1600, 'thr', 0, 'open water at Midmar Dam')], { race: true, note: 'Check your entry confirmation for the day and wave you swim, and tick this off on that day. Use the same goggles you trained in.' }));
+    weeks.push({ p: phaseIdx('taper'), f: 'Race week. Stay loose and rest.', rec: false, long: 1600, s: rs });
+
+    /* dates, ids, totals */
+    const all = [], byKey = {};
+    const begin = parseISO(cfg.start), bOff = Math.round((begin - start) / DAY);
+    weeks.forEach((wk, w) => {
+      const ws = addDays(start, w * 7);
+      let days = (w === W - 1) ? pre.concat([raceOff]) : offs.slice();
+      if (w === 0 && bOff > 0) {
+        /* the plan starts mid-week: keep the later swims and fit them into the days that are left */
+        const keep = Math.min(wk.s.length, 7 - bOff);
+        wk.s = wk.s.slice(wk.s.length - keep); days = days.slice(days.length - keep);
+        const used = days.filter(d => d >= bOff);
+        let free = bOff;
+        days = days.map(d => { if (d >= bOff) return d; while (used.includes(free)) free++; used.push(free); return free; });
+        const order = days.map((d, i) => [d, wk.s[i]]).sort((x, y) => x[0] - y[0]);
+        days = order.map(o => o[0]); wk.s = order.map(o => o[1]);
+      }
+      wk.s.forEach((s, i) => {
+        s.w = w; s.date = addDays(ws, days[i]); s.at = s.date; s.key = iso(s.date);
+        s.base = { steps: s.steps, cont: s.cont, tt: s.tt, ladder: s.ladder };
+        s.metres = s.steps.reduce((x, st) => x + st.reps * st.dist, 0);
+        all.push(s); byKey[s.key] = s;
+      });
+      wk.metres = wk.s.reduce((x, s) => x + s.metres, 0);
+    });
+
+    const META = {
+      base: { name: 'Base', goal: 'Swim 400 m without stopping' },
+      end: { name: 'Endurance', goal: cfg.level >= PEAK * 0.8 ? 'Hold ' + fmtDist(PEAK) + ' non-stop and sharpen' : 'Build to ' + fmtDist(PEAK) + ' non-stop' },
+      taper: { name: 'Taper', goal: 'Rest up and race' }
+    };
+    const phases = codes.map((c, i) => {
+      let first = -1, last = -1;
+      weeks.forEach((wk, w) => { if (wk.p === i) { if (first < 0) first = w; last = w; } });
+      const r = first === last ? 'Week ' + (first + 1) : (last === first + 1 ? 'Weeks ' + (first + 1) + ' and ' + (last + 1) : 'Weeks ' + (first + 1) + ' to ' + (last + 1));
+      return { name: META[c].name, goal: META[c].goal, range: r };
+    });
+    const miles = [400, 800, 1200, 1600, 2000, 2400].filter(m => m <= PEAK).map(m => {
+      let k = 0;
+      while (k < Tn && (rec[k] || a[k] < m)) k++;
+      return [m, Math.min(k, Tn - 1)];
+    });
+    const growth = Tn > 1 ? Math.pow(PEAK / a0, 1 / (Tn - 1)) - 1 : 0;
+    return { cfg, pool, peak: PEAK, start, begin, race, N: W, weeks, phases, miles, all, byKey, total: all.length, growth, maxWeek: Math.max.apply(null, weeks.map(w => w.metres)) };
+  }
+
+  /* ---------- state ---------- */
+  function normStep(x) {
+    if (!x || !KIND[x.kind] || x.kind === 'race' || !ZONES[x.zone]) return null;
+    const reps = Math.round(+x.reps), dist = Math.round(+x.dist), rest = Math.round(+x.rest || 0);
+    if (!(reps >= 1 && reps <= 60 && dist >= 25 && dist <= 10000 && rest >= 0 && rest <= 600)) return null;
+    return { kind: x.kind, reps, dist, zone: x.zone, rest, label: String(x.label || '').slice(0, 40) };
+  }
+  function norm(j) {
+    const o = { cfg: normCfg(j && j.cfg), done: {}, log: [], tt: [], res: {}, moved: {}, skip: {}, edits: {}, u: 0 };
+    if (!j || typeof j !== 'object') return o;
+    o.u = +j.u || 0;
+    if (j.done && typeof j.done === 'object') Object.keys(j.done).forEach(k => {
+      if (typeof j.done[k] !== 'string') return;
+      if (ISO_RE.test(k)) { o.done[k] = j.done[k]; return; }
+      const m = /^(\d+)-(\d)$/.exec(k);   /* the first version keyed sessions by week and slot */
+      if (m && +m[1] < 19) o.done[iso(addDays(parseISO(DEF.start), +m[1] * 7 + [0, 2, 5][+m[2]]))] = j.done[k];
+    });
+    if (Array.isArray(j.log)) o.log = j.log.filter(e => e && typeof e.m === 'number' && ISO_RE.test(e.date) && typeof e.id === 'string')
+      .map(e => ({ id: e.id, date: e.date, m: e.m, ow: !!e.ow })).sort(byDate);
+    if (Array.isArray(j.tt)) o.tt = j.tt.filter(e => e && e.dist > 0 && e.secs > 0 && ISO_RE.test(e.date) && typeof e.id === 'string')
+      .map(e => ({ id: e.id, date: e.date, dist: +e.dist, secs: +e.secs })).sort(byDate);
+    if (j.res && typeof j.res === 'object') Object.keys(j.res).forEach(k => {
+      const r = j.res[k];
+      if (!ISO_RE.test(k) || !r || typeof r !== 'object') return;
+      o.res[k] = { feel: Math.min(5, Math.max(0, r.feel | 0)), t: +r.t > 0 ? +r.t : 0, g: r.g ? 1 : 0,
+        reps: Array.isArray(r.reps) ? r.reps.filter(x => Array.isArray(x) && x[0] > 0 && x[1] > 0).slice(0, 80).map(x => [+x[0], +x[1], x[2] ? 1 : 0]) : [] };
+    });
+    if (j.moved && typeof j.moved === 'object') Object.keys(j.moved).forEach(k => { if (ISO_RE.test(k) && ISO_RE.test(j.moved[k])) o.moved[k] = j.moved[k]; });
+    if (j.skip && typeof j.skip === 'object') Object.keys(j.skip).forEach(k => { if (ISO_RE.test(k) && j.skip[k]) o.skip[k] = 1; });
+    if (j.edits && typeof j.edits === 'object') Object.keys(j.edits).forEach(k => {
+      const e = j.edits[k], st = e && Array.isArray(e.steps) ? e.steps.map(normStep).filter(Boolean).slice(0, 20) : [];
+      if (ISO_RE.test(k) && st.some(x => x.kind === 'main')) o.edits[k] = { steps: st };
+    });
+    return o;
+  }
+  const ls = { get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* storage blocked */ } } };
+  let state;
+  try { state = norm(JSON.parse(ls.get(KEY) || ls.get(OLD_KEY) || 'null')); } catch (e) { state = norm(null); }
+  let PL, tab = 'today', wk = 0, openKey = null, finishing = false, editing = false, edDraft = null, draft = null, nudgeOff = false, P = null;
+  let snd = ls.get(SND_KEY) !== 'off';
+
+  function applyMoves() {
+    PL.all.forEach(s => {
+      const e = !s.race && state.edits[s.key];
+      s.edited = !!e;
+      s.steps = e ? e.steps.map(x => Object.assign({}, x)) : s.base.steps;
+      if (e) {
+        const one = s.steps.filter(x => x.kind === 'main' && x.reps === 1 && x.zone !== 'max').map(x => x.dist), t = s.steps.find(x => x.zone === 'max');
+        s.cont = s.base.cont && one.length ? Math.max.apply(null, one) : undefined;
+        s.tt = s.base.tt && t ? t.dist : undefined;
+        s.ladder = undefined;
+      } else { s.cont = s.base.cont; s.tt = s.base.tt; s.ladder = s.base.ladder; }
+      s.metres = s.steps.reduce((x, st) => x + st.reps * st.dist, 0);
+    });
+    PL.weeks.forEach((w, wi) => {
+      const ws = addDays(PL.start, wi * 7), we = addDays(ws, 6);
+      w.s.forEach(s => { s.at = s.date; });
+      w.s.forEach(s => {
+        const m = state.moved[s.key];
+        if (!m || s.race) return;
+        const d = parseISO(m);
+        if (d < ws || d > we || d >= PL.race || w.s.some(o => o !== s && +o.at === +d)) return;
+        s.at = d;
+      });
+      w.s.sort((x, y) => x.at - y.at);
+      w.metres = w.s.reduce((x, s) => x + s.metres, 0);
+    });
+    PL.all.sort((x, y) => x.at - y.at);
+    PL.maxWeek = Math.max.apply(null, PL.weeks.map(w => w.metres));
+  }
+  /* until the plan is set up or used, it always begins today */
+  function freshStart() {
+    if (state.cfg.setup || [state.done, state.skip, state.edits, state.moved].some(o => Object.keys(o).length)) return;
+    const c = Object.assign({}, state.cfg, { start: iso(today()) });
+    if (validRace(c)) state.cfg.start = c.start;
+  }
+  function rebuild() { freshStart(); PL = buildPlan(state.cfg); applyMoves(); }
+  const curWeek = () => Math.min(PL.N - 1, Math.max(0, Math.floor(Math.round((today() - PL.start) / DAY) / 7)));
+  const wsOf = w => addDays(PL.start, w * 7);
+  rebuild(); wk = curWeek();
+
+  let ref = null, timer = 0, chain = Promise.resolve();
   function save() {
-    try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { /* storage blocked */ }
+    state.u = Date.now();
+    ls.set(KEY, JSON.stringify(state));
     if (!ref) return;
     clearTimeout(timer);
-    timer = setTimeout(function () {
-      var body = { v: 1, done: state.done, log: state.log };
-      chain = chain.then(function () { return ref.set(body); }).catch(function () { });
+    timer = setTimeout(() => {
+      const body = { v: 3, u: state.u, cfg: state.cfg, done: state.done, log: state.log, tt: state.tt, res: state.res, moved: state.moved, skip: state.skip, edits: state.edits };
+      chain = chain.then(() => ref.set(body)).catch(() => { });
     }, 500);
   }
   function initCloud() {
     if (!window.claude || !window.claude.use) return;
-    Promise.all([window.claude.use('db'), window.claude.use('user')]).then(function (r) {
-      var db = r[0], user = r[1];
+    Promise.all([window.claude.use('db'), window.claude.use('user')]).then(([db, user]) => {
       if (!db || !user) return;
-      return user.id().then(function (id) {
+      return user.id().then(id => {
         if (!id) return;
-        var doc = db.doc('data/users/' + id + '/progress');
-        return doc.get().then(function (snap) {
-          if (snap.exists) { state = norm(JSON.parse(JSON.stringify(snap.data()))); ref = doc; try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { } render(); }
-          else { ref = doc; if (Object.keys(state.done).length || state.log.length) save(); }
+        const doc = db.doc('data/users/' + id + '/progress');
+        return doc.get().then(snap => {
+          ref = doc;
+          const remote = snap.exists ? norm(JSON.parse(JSON.stringify(snap.data()))) : null;
+          if (remote && remote.u >= state.u) {
+            state = remote; ls.set(KEY, JSON.stringify(state));
+            rebuild(); wk = curWeek();
+            if (!P) render();
+          } else save();
         });
       });
-    }).catch(function () { });
+    }).catch(() => { });
   }
+
+  /* ---------- paces ---------- */
+  const thrOf = t => t.secs / t.dist * 100 * Math.pow(1500 / t.dist, 0.07);
+  const lastTT = () => state.tt.length ? state.tt[state.tt.length - 1] : null;
+  const curThr = () => { const t = lastTT(); return t ? thrOf(t) : null; };
+  const pace = z => { const T = curThr(); return T ? T * ZONES[z].f : null; };
+  const zp = z => (curThr() || 170) * ZONES[z].f;
+  function raceEst() { const T = curThr(); if (!T) return null; const lo = T * Math.pow(1600 / 1500, 0.07) * 16; return { lo, hi: lo * 1.08 }; }
+  function est(s) {
+    if (s.race) return zp('thr') * Math.pow(1600 / 1500, 0.07) * 16 * 1.04;
+    let t = 0;
+    s.steps.forEach((st, i) => {
+      t += st.reps * st.dist / 100 * zp(st.zone) + (st.reps - 1) * st.rest;
+      const nx = s.steps[i + 1];
+      if (nx) t += (nx.kind === st.kind && st.rest) ? st.rest : 30;
+    });
+    return t;
+  }
+  const mainStep = s => s.steps.filter(st => st.kind === 'main' || st.kind === 'race').sort((x, y) => (ZONES[y.zone].lvl - ZONES[x.zone].lvl) || (y.reps * y.dist - x.reps * x.dist))[0];
 
   /* ---------- views ---------- */
-  var ICON_L = '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>';
-  var ICON_R = '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>';
-  var ICON_OK = '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true" style="width:16px;height:16px;stroke-width:3"><path d="M5 12l5 5 9-10"/></svg>';
+  const ICON_L = '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>';
+  const ICON_R = '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>';
+  const ICON_OK = '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l5 5 9-10"/></svg>';
+  const ICON_X = '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+  const tyc = s => 'ty-' + TYPES[s.type].c;
+  const meta = s => `${num(s.metres)} m · about ${fmtMin(est(s))}`;
 
   function viewHeader() {
-    var t = today(), d = Math.round((RACE - t) / DAY), cw = curWeek();
-    var big = d > 0 ? num(d) : (d === 0 ? 'Today' : 'Done');
-    var unit = d > 0 ? (d === 1 ? 'day to go' : 'days to go') : (d === 0 ? 'is race day' : 'race complete');
-    var right = t < START ? 'Plan starts<br>' + fmtD(START) : 'Week ' + (cw + 1) + ' of ' + N;
-    return '<div><p class="eyebrow">Midmar Mile · 13 and 14 Feb 2027</p><p class="count">' + big + '<small>' + unit + '</small></p></div><p class="topr">' + right + '</p>';
+    const t = today(), d = Math.round((PL.race - t) / DAY), cw = curWeek();
+    const big = d > 0 ? num(d) : (d === 0 ? 'Today' : 'Done');
+    const unit = d > 0 ? (d === 1 ? 'day to go' : 'days to go') : (d === 0 ? 'is race day' : 'race complete');
+    const right = t < PL.begin ? 'Plan starts<br>' + fmtD(PL.begin) : 'Week ' + (cw + 1) + ' of ' + PL.N;
+    return `<div><p class="eyebrow">Midmar Mile · ${fmtY(PL.race)}</p><p class="count">${big}<small>${unit}</small></p></div><p class="topr">${right}</p>`;
   }
 
-  function sessCard(s, i) {
-    var key = wk + '-' + i, dn = state.done[key], d = addDays(wsOf(wk), OFF[i]);
-    var rows = s.lines.map(function (l) {
-      if (l.tag === 'MAIN') {
-        var body = l.cont ? '<b>' + num(l.cont) + ' m non-stop</b><i>easy pace</i>'
-          : '<b>' + l.n + ' × ' + l.d + ' m</b><i>rest ' + l.rest + ' s' + (l.x ? ' · ' + esc(l.x) : '') + '</i>';
-        return '<li class="main"><span class="tag">MAIN</span><span class="what">' + body + '</span></li>';
-      }
-      if (l.tag === 'RACE') return '<li class="main"><span class="tag">RACE</span><span class="what"><b>' + esc(l.txt) + '</b></span></li>';
-      return '<li><span class="tag">' + l.tag + '</span><span class="what">' + esc(l.txt) + (l.sub ? '<i>' + esc(l.sub) + '</i>' : '') + '</span></li>';
+  function stale() {
+    const t = today();
+    if (t < addDays(PL.begin, 14) || t > PL.race) return false;
+    const from = addDays(t, -14);
+    return !PL.all.some(s => s.at >= from && s.at <= t && state.done[s.key]);
+  }
+  function nudge() {
+    if (!state.cfg.setup) return `<section class="card nudge"><h3>Set up your coach</h3><p class="sub">Tell the plan how far you can swim now, a recent time if you have one, and which days you train. It builds every session from that.</p>
+      <div class="btnrow"><button class="btn" data-act="tab" data-tab="setup">Build my plan</button></div></section>`;
+    if (!nudgeOff && stale()) return `<section class="card nudge"><h3>Pick up where you are</h3><p class="sub">No swims are ticked in the last two weeks. Re-plan from today so the sessions match your fitness now.</p>
+      <div class="btnrow"><button class="btn" data-act="replan">Re-plan from today</button><button class="lnk" data-act="nudgeoff">Not now</button></div></section>`;
+    if (!curThr()) {
+      const tr = PL.all.find(s => s.tt && !state.done[s.key] && s.at >= today());
+      return `<section class="card"><h3>Get your target paces</h3><p class="sub">Add one timed swim and every set shows a target time. ${tr ? 'Your next time trial is on ' + fmtD(tr.at) + '.' : ''}</p>
+        <div class="btnrow"><button class="btn ghost" data-act="tab" data-tab="progress">Add a timed swim</button></div></section>`;
+    }
+    return '';
+  }
+  function nextUp() {
+    const t = today(), td = PL.all.find(s => +s.at === +t);
+    if (td && !state.done[td.key] && !state.skip[td.key]) return { s: td, lab: 'Today · ' + fmtD(t) };
+    const nx = PL.all.find(s => s.at > t && !state.done[s.key] && !state.skip[s.key]);
+    if (!nx) return null;
+    return { s: nx, lab: (td && state.done[td.key] ? 'Done for today · next swim ' : 'Next swim · ') + fmtD(nx.at) };
+  }
+  function miniLines(s) {
+    if (s.ladder) return `<li><b>${s.ladder.join(' · ')}</b><span>metres, steady, rest 20 s</span></li>`;
+    return s.steps.filter(st => st.kind !== 'wu' && st.kind !== 'cd').map(st =>
+      `<li><b>${st.reps > 1 ? st.reps + ' × ' : ''}${num(st.dist)} m</b><span>${esc(st.kind === 'drill' ? st.label : ZONES[st.zone].name + (st.label ? ', ' + st.label : ''))}${st.rest ? ' · rest ' + st.rest + ' s' : ''}</span></li>`).join('');
+  }
+  function hero() {
+    const n = nextUp();
+    if (!n) return `<section class="hero onpool"><p class="eyebrow">Plan complete</p><h1>Every swim is ticked</h1><p class="meta">Open Setup to build your next plan.</p></section>`;
+    const s = n.s;
+    return `<section class="hero onpool ${tyc(s)}"><p class="eyebrow">${n.lab}</p><h1>${esc(s.title)}</h1><p class="chip">${TYPES[s.type].name}</p>
+      <p class="meta">${meta(s)}</p><ul class="mini">${miniLines(s)}</ul>
+      <button class="btn" data-act="open" data-key="${s.key}">View workout</button>${s.race ? '' : `<button class="lnk herolnk" data-act="skip" data-key="${s.key}">Skip this swim</button>`}</section>`;
+  }
+  function viewToday() {
+    const W = PL.weeks[wk], ws = wsOf(wk), t = today();
+    const doneM = W.s.reduce((x, s) => x + (state.done[s.key] ? s.metres : 0), 0), planM = W.s.reduce((x, s) => x + (state.skip[s.key] && !state.done[s.key] ? 0 : s.metres), 0);
+    let cells = '';
+    for (let i = 0; i < 7; i++) {
+      const d = addDays(ws, i), s = W.s.find(o => +o.at === +d), isT = +d === +t;
+      cells += s
+        ? `<button class="dcell has ${tyc(s)}${state.done[s.key] ? ' done' : (state.skip[s.key] ? ' skip' : '')}${isT ? ' today' : ''}" data-act="open" data-key="${s.key}" aria-label="${fmtD(d)}, ${esc(s.title)}${state.done[s.key] ? ', done' : (state.skip[s.key] ? ', skipped' : '')}"><span class="dn">${DOW[d.getDay()]}</span><span class="dd">${d.getDate()}</span><span class="dot"></span></button>`
+        : `<div class="dcell${isT ? ' today' : ''}"><span class="dn">${DOW[d.getDay()]}</span><span class="dd">${d.getDate()}</span><span class="dot"></span></div>`;
+    }
+    const rows = W.s.map(s => {
+      const dn = state.done[s.key], sk = !dn && state.skip[s.key], miss = !dn && !sk && s.at < t;
+      return `<button class="srow ${tyc(s)}${dn ? ' done' : (sk ? ' skip' : '')}" data-act="open" data-key="${s.key}"><span class="stripe"></span>
+        <span class="st"><b>${esc(s.title)}</b><span>${fmtD(s.at)} · ${meta(s)}${s.edited ? ' · edited' : ''}</span></span>
+        <span class="state${miss ? ' miss' : ''}">${dn ? ICON_OK + 'Done' : (sk ? 'Skipped' : (miss ? 'Missed' : '')) + ICON_R}</span></button>`;
     }).join('');
-    return '<article class="card' + (dn ? ' is-done' : '') + '"><div class="sh"><div><p class="day">' + fmtD(d) + '</p><h2>' + esc(s.title) + '</h2></div>' +
-      '<p class="m">' + num(s.metres) + ' m<small>' + (s.metres / 25) + ' lengths</small></p></div>' +
-      '<ul class="sets">' + rows + '</ul>' + (s.note ? '<p class="note">' + esc(s.note) + '</p>' : '') +
-      '<button class="tick" data-act="toggle" data-key="' + key + '" aria-pressed="' + (dn ? 'true' : 'false') + '">' +
-      (dn ? ICON_OK + 'Done on ' + fmtS(parseISO(dn)) : 'Mark as done') + '</button></article>';
+    return nudge() + hero() + `<section><div class="wknav"><button class="step" data-act="prev" aria-label="Previous week"${wk === 0 ? ' disabled' : ''}>${ICON_L}</button>
+      <div class="wkt"><p class="phase">Phase ${W.p + 1} · ${PL.phases[W.p].name}</p><h2>Week ${wk + 1}<span> of ${PL.N}</span></h2></div>
+      <button class="step" data-act="next" aria-label="Next week"${wk === PL.N - 1 ? ' disabled' : ''}>${ICON_R}</button></div>
+      <p class="focus">${esc(W.f)}</p><div class="strip">${cells}</div>
+      <div class="vol"><div class="bar"><i style="width:${planM ? Math.round(100 * doneM / planM) : 0}%"></i></div><p>${num(doneM)} of ${num(planM)} m swum this week</p></div>${rows}</section>`;
   }
 
-  function viewWeek() {
-    var P = PLAN[wk], ws = wsOf(wk), we = addDays(ws, 6), t = today();
-    var when = t < ws ? 'Starts ' + fmtD(ws) : (t > we ? 'Past week' : 'This week');
-    var done = P.s.filter(function (s, i) { return state.done[wk + '-' + i]; }).length;
-    var tot = P.s.reduce(function (a, s) { return a + s.metres; }, 0);
-    var h = '<section><div class="wknav"><button class="step" data-act="prev" aria-label="Previous week"' + (wk === 0 ? ' disabled' : '') + '>' + ICON_L + '</button>' +
-      '<div class="wkt"><p class="phase">Phase ' + (P.p + 1) + ' · ' + PH[P.p].name + '</p><h1>Week ' + (wk + 1) + '<span> of ' + N + '</span></h1></div>' +
-      '<button class="step" data-act="next" aria-label="Next week"' + (wk === N - 1 ? ' disabled' : '') + '>' + ICON_R + '</button></div>' +
-      '<p class="dates"><span class="pill">' + when + '</span><span>' + fmtS(ws) + ' to ' + fmtS(we) + ' · ' + num(tot) + ' m planned</span></p>' +
-      '<p class="focus">' + esc(P.f) + '</p>' +
-      '<div class="seg" role="img" aria-label="' + done + ' of ' + P.s.length + ' swims done">' +
-      P.s.map(function (s, i) { return '<i class="' + (state.done[wk + '-' + i] ? 'on' : '') + '"></i>'; }).join('') + '</div></section>';
-    P.s.forEach(function (s, i) { h += sessCard(s, i); });
-    h += '<p class="legend">8 × 50 m means eight swims of 50 m. Rest is the pause between them. Lengths are for a 25 m pool. Swim easy and smooth unless a set says quick or fast.</p>';
-    return h;
+  function stepRow(st) {
+    const z = ZONES[st.zone], p = pace(st.zone);
+    const qty = (st.reps > 1 ? st.reps + ' × ' : '') + num(st.dist) + ' m';
+    let tgt;
+    if (st.zone === 'max') tgt = z.cue;
+    else if (p) tgt = fmtT(p * st.dist / 100) + (st.reps > 1 ? ' each' : '') + (st.dist !== 100 ? ' · ' + fmtT(p) + ' per 100 m' : '');
+    else tgt = z.cue;
+    return `<li class="k-${st.kind}"><p class="tag">${KIND[st.kind].toUpperCase()}</p><p class="q"><b>${qty}</b>${st.label ? `<span class="lbl">${esc(st.label)}</span>` : ''}</p>
+      <p class="zl"><span class="zone">${pips(z.lvl)}${z.name}</span><span class="tgt">${tgt}${st.rest ? ' · rest ' + st.rest + ' s' : ''}</span></p></li>`;
+  }
+  function finForm(s, g, pre) {
+    const pf = pre && pre.feel ? pre.feel : 3;
+    const feel = FEEL.map((f, i) => `<label class="opt"><input type="radio" name="feel" id="finFeel${i + 1}" value="${i + 1}"${i + 1 === pf ? ' checked' : ''}><span>${f}</span></label>`).join('');
+    return `<form id="finForm" class="stack" novalidate><h3>How did it feel?</h3><div class="feel" role="radiogroup" aria-label="How it felt">${feel}</div>
+      ${s.tt && !pre ? `<div class="fld"><label for="finTT">Your time for the ${s.tt} m trial</label><input id="finTT" type="text" inputmode="numeric" autocomplete="off" placeholder="e.g. 4:30" value="${g && g.tt ? fmtT(g.tt) : ''}"><p class="hint">Minutes and seconds. This sets your target paces.</p></div>` : ''}
+      ${!g && !s.race ? `<div class="fld"><label for="finTime">Total time (optional)</label><input id="finTime" type="text" inputmode="numeric" autocomplete="off" placeholder="e.g. 38:00" value="${pre && pre.t ? fmtT(pre.t) : ''}"></div>` : ''}
+      ${s.race ? `<div class="fld"><label for="finTime">Your race time</label><input id="finTime" type="text" inputmode="numeric" autocomplete="off" placeholder="e.g. 42:30" value="${pre && pre.t ? fmtT(pre.t) : ''}"></div>` : ''}
+      ${s.cont && !pre ? `<div class="chk"><input id="finNon" type="checkbox"${g ? ' checked' : ''}><label for="finNon">I swam the ${num(s.cont)} m without stopping</label></div>
+        <div class="chk"><input id="finOW" type="checkbox"><label for="finOW">It was in open water</label></div>` : ''}
+      <p class="err" id="finErr" role="alert"></p><button class="btn" type="submit">${pre ? 'Save changes' : 'Save swim'}</button>
+      <button class="lnk" type="button" data-act="${g ? 'plend' : 'cancelfin'}">${g ? 'Discard this workout' : 'Cancel'}</button></form>`;
+  }
+  function repStats(reps) {
+    const m = (reps || []).filter(x => x[2]);
+    if (!m.length) return null;
+    return { avg: m.reduce((x, r) => x + r[1], 0) / m.reduce((x, r) => x + r[0], 0) * 100, chips: m.map(r => `<span>${fmtT(r[1])}</span>`).join('') };
+  }
+  function resultCard(s) {
+    const r = state.res[s.key] || {}, rs = repStats(r.reps);
+    const bits = ['Done on ' + fmtS(parseISO(state.done[s.key]))];
+    if (r.feel) bits.push('felt ' + FEEL[r.feel - 1].toLowerCase());
+    if (r.g) bits.push('guided');
+    return `<section class="card result">${r.t ? `<p class="big">${fmtT(r.t)}</p>` : ''}<p class="sub">${bits.join(' · ')}</p>
+      ${rs ? `<p class="sub">Main set average ${fmtT(rs.avg)} per 100 m</p><div class="reps">${rs.chips}</div>` : ''}
+      <div class="lnks"><button class="lnk" data-act="editres">Edit result</button><button class="lnk" data-act="undo" data-key="${s.key}">Mark as not done</button></div></section>`;
+  }
+  function moveRow(s) {
+    const W = PL.weeks[s.w], ws = wsOf(s.w);
+    let h = '';
+    for (let i = 0; i < 7; i++) {
+      const d = addDays(ws, i), cur = +s.at === +d, off = !cur && (d >= PL.race || W.s.some(o => o !== s && +o.at === +d));
+      h += `<button class="mv${cur ? ' cur' : ''}" data-act="move" data-key="${s.key}" data-to="${iso(d)}"${off ? ' disabled' : ''}${cur ? ' aria-pressed="true"' : ''} aria-label="${cur ? 'Planned for' : 'Move to'} ${fmtD(d)}">${DOW[d.getDay()]}</button>`;
+    }
+    return `<div class="move"><p>Move this swim to another day</p><div class="mvrow">${h}</div></div>`;
+  }
+  function editForm(s) {
+    const rows = edDraft.map((st, i) => `<li><p class="tag">${KIND[st.kind].toUpperCase()}${st.label ? ' · ' + esc(st.label.toUpperCase()) : ''}</p>
+      <div class="edrow"><div class="fld"><label for="ed${i}r">Reps</label><input id="ed${i}r" type="number" inputmode="numeric" min="1" max="60" value="${st.reps}"></div>
+        <div class="fld"><label for="ed${i}d">Metres</label><input id="ed${i}d" type="number" inputmode="numeric" min="${PL.pool}" max="10000" step="${PL.pool}" value="${st.dist}"></div>
+        <div class="fld"><label for="ed${i}s">Rest (s)</label><input id="ed${i}s" type="number" inputmode="numeric" min="0" max="600" step="5" value="${st.rest}"></div></div>
+      <div class="edrow b"><div class="fld"><label for="ed${i}z">Effort</label><select id="ed${i}z">${['easy', 'steady', 'thr', 'fast'].concat(st.zone === 'max' ? ['max'] : []).map(z => `<option value="${z}"${z === st.zone ? ' selected' : ''}>${ZONES[z].name}</option>`).join('')}</select></div>
+        <button class="rm" type="button" data-act="edrm" data-i="${i}" aria-label="Remove this set">Remove</button></div></li>`).join('');
+    return `<section class="card"><h3>Edit this swim</h3><p class="sub">Change the sets for this day only. The rest of the plan stays as it is.</p><ol class="edsteps">${rows}</ol>
+      <div class="btnrow"><button class="btn ghost" type="button" data-act="edadd">Add a set</button></div><p class="err" id="edErr" role="alert" style="margin-top:10px"></p>
+      <div class="btnrow"><button class="btn" type="button" data-act="edsave">Save changes</button></div>
+      <div class="lnks"><button class="lnk" type="button" data-act="edcancel">Cancel</button>${s.edited ? '<button class="lnk" type="button" data-act="edreset">Go back to the planned swim</button>' : ''}</div></section>`;
+  }
+  function syncEd() {
+    edDraft.forEach((st, i) => {
+      const r = $('ed' + i + 'r'); if (!r) return;
+      st.reps = parseInt(r.value, 10); st.dist = parseInt($('ed' + i + 'd').value, 10); st.rest = parseInt($('ed' + i + 's').value || '0', 10); st.zone = $('ed' + i + 'z').value;
+    });
+  }
+  function saveEd() {
+    syncEd();
+    const s = PL.byKey[openKey], err = $('edErr'), fail = m => { err.textContent = m; };
+    for (const st of edDraft) {
+      if (!(st.reps >= 1 && st.reps <= 60)) return fail('Reps must be between 1 and 60.');
+      if (!(st.dist >= PL.pool && st.dist <= 10000) || st.dist % PL.pool) return fail('Each distance must be a multiple of ' + PL.pool + ' m, your pool length.');
+      if (!(st.rest >= 0 && st.rest <= 600)) return fail('Rest must be between 0 and 600 seconds.');
+    }
+    if (!edDraft.some(st => st.kind === 'main')) return fail('Keep at least one main set.');
+    state.edits[s.key] = { steps: edDraft.map(st => ({ kind: st.kind, reps: st.reps, dist: st.dist, zone: st.zone, rest: st.rest, label: st.label === 'non-stop' && st.reps > 1 ? '' : st.label })) };
+    editing = false; applyMoves(); save(); render(); top();
+  }
+  function viewDetail(s) {
+    const dn = state.done[s.key], ms = mainStep(s), z = ZONES[ms.zone], p = ms.zone !== 'max' && pace(ms.zone);
+    const third = p ? `<b>${fmtT(p)}</b><span>${z.name.toLowerCase()} pace per 100 m</span>` : `<b>${z.name}</b><span>main effort</span>`;
+    let h = `<section class="detail ${tyc(s)}"><button class="back" data-act="back">${ICON_L}Week ${s.w + 1}</button><div><p class="chip">${TYPES[s.type].name}</p></div>
+      <h1>${esc(s.title)}</h1><p class="when">${fmtD(s.at)} · week ${s.w + 1} of ${PL.N}</p>
+      <div class="facts"><div><b>${num(s.metres)} m</b><span>${s.race ? 'open water' : (s.metres / PL.pool) + ' lengths'}</span></div><div><b>${fmtMin(est(s))}</b><span>estimated</span></div><div>${third}</div></div>
+      <p class="why">${TYPES[s.type].why}</p>`;
+    if (editing) return h + editForm(s) + '</section>';
+    h += `<ol class="steps">${s.steps.map(stepRow).join('')}</ol>${s.note ? `<p class="note">${esc(s.note)}</p>` : ''}${s.edited ? '<p class="note">You edited this swim. Open Edit swim to change it again or go back to the planned sets.</p>' : ''}`;
+    if (dn && finishing) h += `<section class="card">${finForm(s, null, state.res[s.key] || {})}</section>`;
+    else if (dn) h += resultCard(s);
+    else if (state.skip[s.key]) h += `<section class="card"><p class="sub">You skipped this swim. It does not count as missed.</p><div class="btnrow"><button class="btn ghost" data-act="unskip" data-key="${s.key}">Bring it back</button></div></section>`;
+    else if (finishing) h += `<section class="card">${finForm(s, null)}</section>`;
+    else h += `<div class="btnrow">${s.race ? '' : `<button class="btn" data-act="play" data-key="${s.key}">Start guided workout</button>`}<button class="btn${s.race ? '' : ' ghost'}" data-act="finish">Mark as done</button></div>
+      ${s.race ? '' : `<div class="btnrow two"><button class="btn ghost" data-act="edit">Edit swim</button><button class="btn ghost" data-act="skip" data-key="${s.key}">Skip swim</button></div><p class="legend" style="margin:10px 0 16px">Guided mode times each rep and counts down your rests. Leave your phone at the end of the lane and tap once each time you touch the wall.</p>` + moveRow(s)}`;
+    return h + '</section>';
   }
 
+  function weekBars() {
+    const W = 360, H = 170, Lm = 42, Rm = 8, Tm = 12, Bm = 26, pw = W - Lm - Rm, ph = H - Tm - Bm, n = PL.N, cw = curWeek(), started = today() >= PL.begin;
+    const top = Math.max(1000, Math.ceil(PL.maxWeek / 1000) * 1000), slot = pw / n, bw = Math.max(3, Math.min(22, slot - 3));
+    const Y = m => Tm + ph * (1 - m / top);
+    let s = `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Planned and swum distance for each week of the plan">`;
+    [0, top / 2, top].forEach(v => { s += `<line class="grid" x1="${Lm}" x2="${W - Rm}" y1="${Y(v)}" y2="${Y(v)}"/><text class="ax" x="${Lm - 6}" y="${Y(v) + 3.5}" text-anchor="end">${v === 0 ? '0' : (v / 1000) + ' km'}</text>`; });
+    const every = Math.ceil(n / 7);
+    PL.weeks.forEach((wkk, i) => {
+      const x = Lm + slot * i + (slot - bw) / 2, dm = wkk.s.reduce((a, o) => a + (state.done[o.key] ? o.metres : 0), 0);
+      s += `<rect class="bp" x="${x.toFixed(1)}" y="${Y(wkk.metres).toFixed(1)}" width="${bw.toFixed(1)}" height="${(Y(0) - Y(wkk.metres)).toFixed(1)}" rx="2"/>`;
+      if (dm) s += `<rect class="bd" x="${x.toFixed(1)}" y="${Y(dm).toFixed(1)}" width="${bw.toFixed(1)}" height="${(Y(0) - Y(dm)).toFixed(1)}" rx="2"/>`;
+      const isCur = started && i === cw;
+      if (isCur || (i % every === 0 && Math.abs(i - cw) >= every / 2) || (!started && i % every === 0)) s += `<text class="ax${isCur ? ' cur' : ''}" x="${(x + bw / 2).toFixed(1)}" y="${H - 8}" text-anchor="middle">${isCur ? 'Wk ' : ''}${i + 1}</text>`;
+    });
+    return s + '</svg><div class="key"><span class="sq pl">Planned</span><span class="sq">Swum</span></div>';
+  }
   function viewPlan() {
-    var cw = curWeek(), t = today(), h = '';
-    PH.forEach(function (ph, pi) {
-      h += '<section><div class="phasehead"><h2>Phase ' + (pi + 1) + ' · ' + ph.name + '</h2><p>' + ph.range + ' · ' + ph.goal + '</p></div><div class="list">';
-      PLAN.forEach(function (P, w) {
-        if (P.p !== pi) return;
-        var ws = wsOf(w), we = addDays(ws, 6);
-        var dn = P.s.filter(function (s, i) { return state.done[w + '-' + i]; }).length;
-        var tot = P.s.reduce(function (a, s) { return a + s.metres; }, 0);
-        h += '<button class="weekrow' + (w === cw && t >= START ? ' now' : '') + '" data-act="goto" data-w="' + w + '"><span class="n">' + (w + 1) + '</span>' +
-          '<span class="t"><b>' + fmtS(ws) + ' to ' + fmtS(we) + '</b><span>' + esc(P.f) + '</span></span>' +
-          '<span class="r"><em>' + dn + '/' + P.s.length + '</em>' + num(tot) + ' m</span></button>';
+    const cw = curWeek(), t = today(), km = PL.weeks.reduce((x, w) => x + w.metres, 0) / 1000;
+    let h = `<section class="card"><h3>Your plan</h3><p class="sub"><b class="sum">${PL.N} weeks, ${PL.total} swims, ${Math.round(km)} km.</b> The long swim builds from ${fmtDist(PL.weeks[0].long)} to ${fmtDist(PL.peak)}, with a lighter week and a time trial every fourth week.</p>
+      <div style="margin-top:12px">${weekBars()}</div></section>`;
+    PL.phases.forEach((ph, pi) => {
+      h += `<section><div class="phasehead"><h2>Phase ${pi + 1} · ${ph.name}</h2><p>${ph.range} · ${ph.goal}</p></div><div class="list">`;
+      PL.weeks.forEach((W, w) => {
+        if (W.p !== pi) return;
+        const ws = wsOf(w), dn = W.s.filter(s => state.done[s.key]).length;
+        h += `<button class="weekrow${w === cw && t >= PL.begin ? ' now' : ''}" data-act="goto" data-w="${w}"><span class="n">${w + 1}</span>
+          <span class="t"><b>${fmtS(ws)} to ${fmtS(addDays(ws, 6))}</b><span>${esc(W.f)}</span></span><span class="r"><em>${dn}/${W.s.length}</em>${num(W.metres)} m</span></button>`;
       });
       h += '</div></section>';
     });
     return h;
   }
 
-  function chartSVG() {
-    var W = 360, H = 220, Lm = 42, Rm = 14, Tm = 14, Bm = 28, pw = W - Lm - Rm, ph = H - Tm - Bm;
-    var t0 = START.getTime(), t1 = RACE.getTime();
-    function X(t) { return Lm + pw * Math.min(1, Math.max(0, (t - t0) / (t1 - t0))); }
-    function Y(m) { return Tm + ph * (1 - Math.min(m, 2000) / 2000); }
-    var s = '<svg class="chart" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Longest non-stop swims over time, with the 1.6 km race distance marked">';
-    [0, 500, 1000, 1500, 2000].forEach(function (v) {
-      s += '<line class="grid" x1="' + Lm + '" x2="' + (W - Rm) + '" y1="' + Y(v) + '" y2="' + Y(v) + '"/><text class="ax" x="' + (Lm - 6) + '" y="' + (Y(v) + 3.5) + '" text-anchor="end">' + (v === 0 ? '0' : (v / 1000) + ' km') + '</text>';
-    });
-    [[START, 'Oct', 'start'], [new Date(2026, 10, 1), 'Nov', 'middle'], [new Date(2026, 11, 1), 'Dec', 'middle'], [new Date(2027, 0, 1), 'Jan', 'middle'], [new Date(2027, 1, 1), 'Feb', 'middle']].forEach(function (m) {
-      s += '<text class="ax" x="' + X(m[0].getTime()) + '" y="' + (H - 8) + '" text-anchor="' + m[2] + '">' + m[1] + '</text>';
-    });
-    s += '<line class="goal" x1="' + Lm + '" x2="' + (W - Rm) + '" y1="' + Y(1600) + '" y2="' + Y(1600) + '"/><text class="goalt" x="' + (W - Rm) + '" y="' + (Y(1600) - 5) + '" text-anchor="end">Race 1.6 km</text>';
-    var pts = state.log.map(function (e) { return { x: X(parseISO(e.date).getTime()), y: Y(e.m), ow: e.ow }; });
-    if (pts.length > 1) s += '<polyline class="ln" points="' + pts.map(function (p) { return p.x.toFixed(1) + ',' + p.y.toFixed(1); }).join(' ') + '"/>';
-    pts.forEach(function (p) { s += '<circle class="pt' + (p.ow ? ' ow' : '') + '" cx="' + p.x.toFixed(1) + '" cy="' + p.y.toFixed(1) + '" r="4.5"/>'; });
+  function nonstopChart() {
+    const W = 360, H = 220, Lm = 42, Rm = 14, Tm = 14, Bm = 28, pw = W - Lm - Rm, ph = H - Tm - Bm;
+    const t0 = PL.start.getTime(), t1 = PL.race.getTime(), top = Math.max(2000, PL.peak);
+    const X = t => Lm + pw * Math.min(1, Math.max(0, (t - t0) / (t1 - t0)));
+    const Y = m => Tm + ph * (1 - Math.min(m, top) / top);
+    let s = `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Longest non-stop swims over time, with the 1.6 km race distance marked">`;
+    for (let v = 0; v <= top; v += top > 2000 ? 600 : 500) s += `<line class="grid" x1="${Lm}" x2="${W - Rm}" y1="${Y(v)}" y2="${Y(v)}"/><text class="ax" x="${Lm - 6}" y="${Y(v) + 3.5}" text-anchor="end">${v === 0 ? '0' : (v / 1000) + ' km'}</text>`;
+    s += `<text class="ax" x="${Lm}" y="${H - 8}" text-anchor="start">${MON[PL.start.getMonth()]}</text>`;
+    let lastX = Lm + 14, mt = new Date(PL.start.getFullYear(), PL.start.getMonth() + 1, 1);
+    while (mt < PL.race) {
+      const mx = X(mt.getTime());
+      if (mx - lastX >= 26 && W - Rm - mx >= 12) { s += `<text class="ax" x="${mx}" y="${H - 8}" text-anchor="middle">${MON[mt.getMonth()]}</text>`; lastX = mx; }
+      mt = new Date(mt.getFullYear(), mt.getMonth() + 1, 1);
+    }
+    s += `<line class="goal" x1="${Lm}" x2="${W - Rm}" y1="${Y(1600)}" y2="${Y(1600)}"/><text class="goalt" x="${W - Rm}" y="${Y(1600) - 5}" text-anchor="end">Race 1.6 km</text>`;
+    const pts = state.log.map(e => ({ x: X(parseISO(e.date).getTime()), y: Y(e.m), ow: e.ow }));
+    if (pts.length > 1) s += `<polyline class="ln" points="${pts.map(p => p.x.toFixed(1) + ',' + p.y.toFixed(1)).join(' ')}"/>`;
+    pts.forEach(p => { s += `<circle class="pt${p.ow ? ' ow' : ''}" cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="4.5"/>`; });
     return s + '</svg>';
   }
-
-  function viewProgress() {
-    var keys = Object.keys(state.done), done = keys.length;
-    var metres = keys.reduce(function (a, k) { var p = k.split('-'); var s = PLAN[+p[0]] && PLAN[+p[0]].s[+p[1]]; return a + (s ? s.metres : 0); }, 0);
-    var best = state.log.reduce(function (a, e) { return Math.max(a, e.m); }, 0);
-    var ow = state.log.filter(function (e) { return e.ow; }).length;
-    var h = '<section class="card stats"><div><p class="v">' + done + '<small>/' + TOTAL_SESS + '</small></p><p class="l">Swims done</p></div>' +
-      '<div><p class="v">' + num(metres) + '<small> m</small></p><p class="l">From the plan</p></div>' +
-      '<div><p class="v">' + (best ? num(best) + '<small> m</small>' : '–') + '</p><p class="l">Best non-stop</p></div></section>';
-    h += '<section class="card"><h3>Longest non-stop swims</h3>' + chartSVG() +
-      '<div class="key"><span>Pool</span><span class="o">Open water</span></div>' +
-      (state.log.length ? '' : '<p class="empty">Nothing logged yet. Add your first non-stop swim below and it appears here.</p>') + '</section>';
-    h += '<section class="card"><h3>Milestones</h3><ul class="miles">';
-    MILES.forEach(function (m) {
-      var ok = best >= m[0], by = addDays(wsOf(m[1] - 1), 6);
-      h += '<li class="' + (ok ? 'ok' : '') + '"><span class="dot">' + (ok ? ICON_OK : '') + '</span><span>' + num(m[0]) + ' m non-stop' + (m[0] === 1600 ? ' (race distance)' : '') + '</span><span class="w">By ' + fmtS(by) + '</span></li>';
-    });
-    h += '<li class="' + (ow >= OW_GOAL ? 'ok' : '') + '"><span class="dot">' + (ow >= OW_GOAL ? ICON_OK : '') + '</span><span>Open-water swims</span><span class="w">' + Math.min(ow, 99) + ' of ' + OW_GOAL + '</span></li></ul></section>';
-    h += '<section class="card"><h3>Log a non-stop swim</h3><form class="log" id="logForm" novalidate><div class="row2">' +
-      '<div class="fld"><label for="logM">Metres</label><input id="logM" type="number" inputmode="numeric" min="25" max="10000" step="25" placeholder="e.g. 400"></div>' +
-      '<div class="fld"><label for="logD">Date</label><input id="logD" type="date" value="' + iso(today()) + '" max="' + iso(today()) + '"></div></div>' +
-      '<div class="chk"><input id="logOW" type="checkbox"><label for="logOW">Swam in open water</label></div>' +
-      '<p class="err" id="logErr" role="alert"></p><button class="tick" type="submit">Add swim</button></form></section>';
-    if (state.log.length) {
-      h += '<section class="card"><h3>Logged swims</h3><ul class="entries">';
-      state.log.slice().reverse().slice(0, 12).forEach(function (e) {
-        h += '<li><span><span class="md">' + num(e.m) + ' m</span> <span class="dd">' + fmtD(parseISO(e.date)) + '</span></span><span class="tg">' + (e.ow ? 'Open water' : '') + '</span>' +
-          '<button class="rm" data-act="del" data-id="' + esc(e.id) + '" aria-label="Remove ' + num(e.m) + ' m swim">Remove</button></li>';
+  function pacesCard() {
+    const T = curThr(), e = raceEst(), lt = lastTT();
+    let h = '<section class="card" id="paces"><h3>Your paces</h3>';
+    if (T) {
+      h += `<p class="bigline">${Math.round(e.lo / 60)} to ${Math.round(e.hi / 60)}<small>min predicted for the Mile</small></p>
+        <p class="sub" style="margin-top:6px">From your ${lt.dist} m in ${fmtT(lt.secs)} on ${fmtS(parseISO(lt.date))}. Open water is usually slower than the pool, so the range allows for that.</p>
+        <ul class="zt">${['easy', 'steady', 'thr', 'fast'].map(k => `<li><span class="zone">${pips(ZONES[k].lvl)}${ZONES[k].name}</span><span class="zc">${ZONES[k].cue}</span><span class="zp">${fmtT(T * ZONES[k].f)}</span></li>`).join('')}</ul>
+        <p class="hint">Target time per 100 m. Every set in your plan uses these.</p>`;
+    } else h += '<p class="sub">Swim 100, 200 or 400 m as fast as you can hold evenly, time it, and add it here. The plan then shows a target time for every set and predicts your race time.</p>';
+    h += `<form id="ttForm" class="stack" novalidate style="margin-top:14px"><div class="row2">
+      <div class="fld"><label for="ttDist">Distance</label><select id="ttDist">${[100, 200, 400, 800, 1500].map(d => `<option value="${d}"${d === (lt ? lt.dist : 100) ? ' selected' : ''}>${num(d)} m</option>`).join('')}</select></div>
+      <div class="fld"><label for="ttTime">Time</label><input id="ttTime" type="text" inputmode="numeric" autocomplete="off" placeholder="e.g. 2:10"></div></div>
+      <div class="fld"><label for="ttDate">Date</label><input id="ttDate" type="date" value="${iso(today())}" max="${iso(today())}"></div>
+      <p class="err" id="ttErr" role="alert"></p><button class="btn${T ? ' ghost' : ''}" type="submit">Add timed swim</button></form>`;
+    if (state.tt.length) {
+      h += '<ul class="entries" style="margin-top:12px">';
+      state.tt.slice().reverse().slice(0, 8).forEach((e2, i, arr) => {
+        const prev = arr[i + 1], d = prev ? Math.round(thrOf(prev) - thrOf(e2)) : 0;
+        h += `<li><span><span class="md">${num(e2.dist)} m in ${fmtT(e2.secs)}</span> <span class="dd">${fmtD(parseISO(e2.date))}</span></span>
+          <span class="tg">${prev && d ? Math.abs(d) + ' s per 100 m ' + (d > 0 ? 'faster' : 'slower') : ''}</span><button class="rm" data-act="deltt" data-id="${esc(e2.id)}" aria-label="Remove ${e2.dist} m timed swim">Remove</button></li>`;
       });
-      h += '</ul></section>';
+      h += '</ul>';
+    }
+    return h + '</section>';
+  }
+  function viewProgress() {
+    let done = 0, metres = 0;
+    PL.all.forEach(s => { if (state.done[s.key]) { done++; metres += s.metres; } });
+    const best = state.log.reduce((x, e) => Math.max(x, e.m), 0), ow = state.log.filter(e => e.ow).length;
+    let h = `<section class="card stats"><div><p class="v">${done}<small>/${PL.total}</small></p><p class="l">Swims done</p></div>
+      <div><p class="v">${metres >= 10000 ? (metres / 1000).toFixed(1) + '<small> km</small>' : num(metres) + '<small> m</small>'}</p><p class="l">From the plan</p></div>
+      <div><p class="v">${best ? num(best) + '<small> m</small>' : '–'}</p><p class="l">Best non-stop</p></div></section>`;
+    h += pacesCard();
+    h += `<section class="card"><h3>Weekly distance</h3>${weekBars()}</section>`;
+    h += `<section class="card"><h3>Longest non-stop swims</h3>${nonstopChart()}<div class="key"><span>Pool</span><span class="o">Open water</span></div>
+      ${state.log.length ? '' : '<p class="empty">Nothing logged yet. Long swims you finish without stopping appear here, or add one below.</p>'}</section>`;
+    h += '<section class="card"><h3>Milestones</h3><ul class="miles">';
+    PL.miles.forEach(m => {
+      const ok = best >= m[0];
+      h += `<li class="${ok ? 'ok' : ''}"><span class="dot2">${ok ? ICON_OK : ''}</span><span>${num(m[0])} m non-stop${m[0] === 1600 ? ' (race distance)' : ''}</span><span class="w">By ${fmtS(addDays(wsOf(m[1]), 6))}</span></li>`;
+    });
+    h += `<li class="${ow >= OW_GOAL ? 'ok' : ''}"><span class="dot2">${ow >= OW_GOAL ? ICON_OK : ''}</span><span>Open-water swims</span><span class="w">${Math.min(ow, 99)} of ${OW_GOAL}</span></li></ul></section>`;
+    h += `<section class="card"><h3>Log a non-stop swim</h3><form class="stack" id="logForm" novalidate><div class="row2">
+      <div class="fld"><label for="logM">Metres</label><input id="logM" type="number" inputmode="numeric" min="25" max="10000" step="25" placeholder="e.g. 400"></div>
+      <div class="fld"><label for="logD">Date</label><input id="logD" type="date" value="${iso(today())}" max="${iso(today())}"></div></div>
+      <div class="chk"><input id="logOW" type="checkbox"><label for="logOW">Swam in open water</label></div>
+      <p class="err" id="logErr" role="alert"></p><button class="btn ghost" type="submit">Add swim</button></form>`;
+    if (state.log.length) {
+      h += '<ul class="entries" style="margin-top:12px">';
+      state.log.slice().reverse().slice(0, 12).forEach(e => {
+        h += `<li><span><span class="md">${num(e.m)} m</span> <span class="dd">${fmtD(parseISO(e.date))}</span></span><span class="tg o">${e.ow ? 'Open water' : ''}</span>
+          <button class="rm" data-act="del" data-id="${esc(e.id)}" aria-label="Remove ${num(e.m)} m swim">Remove</button></li>`;
+      });
+      h += '</ul>';
+    }
+    h += '</section>';
+    const hist = PL.all.filter(s => state.done[s.key]).sort((x, y) => state.done[x.key] < state.done[y.key] ? 1 : -1).slice(0, 8);
+    if (hist.length) {
+      h += '<section class="card"><h3>Recent swims</h3>';
+      hist.forEach(s => {
+        const r = state.res[s.key] || {};
+        h += `<button class="srow ${tyc(s)} done" data-act="open" data-key="${s.key}" style="margin-bottom:6px"><span class="stripe"></span><span class="st"><b>${esc(s.title)}</b>
+          <span>${fmtS(parseISO(state.done[s.key]))} · ${num(s.metres)} m${r.t ? ' · ' + fmtT(r.t) : ''}${r.feel ? ' · ' + FEEL[r.feel - 1].toLowerCase() : ''}</span></span><span class="state">${ICON_R}</span></button>`;
+      });
+      h += '</section>';
     }
     return h;
   }
 
   function viewRace() {
-    var tips = [
+    const e = raceEst();
+    const tips = [
       ['Breathe both sides', 'Breathe every 3 strokes when you can. Exhale fully underwater so you are not holding your breath.'],
       ['Sight the buoy', 'Every 6 to 8 strokes, lift your eyes forward, find the next buoy, then roll to breathe. Practise this in every open-water swim.'],
-      ['Start wide', 'Mass starts are rough. Start to the side or near the back and find clear water rather than fighting for the line.'],
+      ['Start wide', 'Mass starts are rough. Start to the side or near the back and find clear water before you settle into your pace.'],
       ['If it gets hard', 'Roll onto your back and float until your breathing settles. Raise an arm if you need help.'],
       ['Swim open water before race day', 'Aim for at least four swims in a dam or the sea, always with a buddy. Swimming straight without a wall takes practice.'],
       ['Nothing new on the day', 'Use the same goggles and the same routine you trained with.']
     ];
-    var h = '<section class="card"><p class="eyebrow">Race weekend</p><p class="big">13 and 14 February 2027</p>' +
-      '<p class="cardp">Midmar Dam, KwaZulu-Natal. The Mile is 1.6 km, which is 64 lengths of a 25 m pool. Check your entry confirmation for the day and wave you swim. Event details: <a href="https://midmarmile.com/" target="_blank" rel="noopener">midmarmile.com</a></p></section>';
-    h += '<section class="card"><h3>Race notes</h3><ul class="tips">' + tips.map(function (t) { return '<li><b>' + t[0] + '</b><span>' + t[1] + '</span></li>'; }).join('') + '</ul></section>';
-    h += '<p class="legend">If you have a heart or breathing condition, check with a doctor before you step up your training.</p>';
-    return h;
+    let h = `<section class="card"><p class="eyebrow">Race day in your plan</p><p class="bigline" style="margin-top:6px">${fmtY(PL.race)}</p>
+      <p class="sub cardp" style="margin-top:8px">Midmar Dam, KwaZulu-Natal. The Mile is 1.6 km, which is ${1600 / PL.pool} lengths of a ${PL.pool} m pool. The 2027 event runs on 13 and 14 February, so check your entry confirmation for the day and wave you swim. Event details: <a href="https://midmarmile.com/" target="_blank" rel="noopener">midmarmile.com</a></p></section>`;
+    h += '<section class="card"><h3>Pacing plan</h3>';
+    if (e) {
+      const mid = (e.lo + e.hi) / 2;
+      h += `<p class="bigline">${Math.round(e.lo / 60)} to ${Math.round(e.hi / 60)}<small>min predicted</small></p>
+        <p class="sub" style="margin-top:6px">Swim the first quarter a little slower than this, then hold your rhythm. Checkpoints at an even pace:</p>
+        <div class="cps">${[400, 800, 1200, 1600].map(d => `<div><b>${fmtT(mid * d / 1600)}</b><span>${fmtDist(d)}</span></div>`).join('')}</div>`;
+    } else h += '<p class="sub">Add a timed swim on the Progress tab to see a predicted race time and checkpoints for every 400 m.</p>';
+    h += '</section>';
+    h += `<section class="card"><h3>Race notes</h3><ul class="tips">${tips.map(t => `<li><b>${t[0]}</b><span>${t[1]}</span></li>`).join('')}</ul></section>`;
+    return h + '<p class="legend">If you have a heart or breathing condition, check with a doctor before you step up your training.</p>';
   }
 
-  var VIEWS = { week: viewWeek, plan: viewPlan, progress: viewProgress, race: viewRace };
+  function draftPreview(d) {
+    if (!ISO_RE.test(d.start) || !ISO_RE.test(d.race) || !validRace(d) || !(d.level >= 0)) return '';
+    const n = weeksBetween(mondayOf(parseISO(d.start)), parseISO(d.race)) + 1, tn = n - 2, a0 = startLong(d);
+    const g = tn > 1 ? Math.pow(d.peak / a0, 1 / (tn - 1)) - 1 : 0;
+    return `${n} weeks. The long swim goes from ${fmtDist(a0)} to ${fmtDist(d.peak)}, about ${Math.round(g * 100)}% further each week.` +
+      (g > 0.2 ? ' That is a steep build. An earlier start, or a shorter longest swim, makes it gentler.' : '');
+  }
+  function viewSetup() {
+    const d = draft, order = [1, 2, 3, 4, 5, 6, 0], lt = lastTT();
+    const opt = (type, name, val, label, checked, id) => `<label class="opt"><input type="${type}" name="${name}" id="${id}" value="${val}"${checked ? ' checked' : ''}><span>${label}</span></label>`;
+    return `<section class="card"><h3>Your plan now</h3><p class="sub sum"><b>${PL.N} weeks</b> and <b>${PL.total} swims</b>, ${fmtD(PL.begin)} to ${fmtD(PL.race)}. ${PL.cfg.perWeek} swims a week in a ${PL.pool} m pool, building to a ${fmtDist(PL.peak)} long swim.</p></section>
+      <section class="card setup"><h3 style="margin:0">Build your plan</h3>
+      <div class="fld"><label for="cfgLevel">Longest swim you can do now without stopping (metres)</label><input id="cfgLevel" type="number" inputmode="numeric" min="0" max="2400" step="25" value="${isNaN(d.level) ? '' : d.level}"><p class="hint">Enter 0 if you cannot swim a full length yet. Your first long swim is set from this.</p></div>
+      <div class="fld"><span class="lab">A recent timed swim (optional)</span><div class="row2">
+        <select id="cfgTTDist" aria-label="Timed swim distance">${[100, 200, 400, 800, 1500].map(x => `<option value="${x}"${x === d.ttDist ? ' selected' : ''}>${num(x)} m</option>`).join('')}</select>
+        <input id="cfgTTTime" type="text" inputmode="numeric" autocomplete="off" placeholder="e.g. 2:10" aria-label="Timed swim time" value="${esc(d.ttTime)}"></div>
+        <p class="hint">${lt ? `Your paces now come from ${lt.dist} m in ${fmtT(lt.secs)}. Enter a newer time to update them.` : 'This sets a target time for every set. You can skip it and do the time trial in week 1.'}</p></div>
+      <div class="row2"><div class="fld"><label for="cfgStart">Plan starts</label><input id="cfgStart" type="date" value="${esc(d.start)}"></div>
+        <div class="fld"><label for="cfgRace">Race day</label><input id="cfgRace" type="date" value="${esc(d.race)}"></div></div>
+      <button class="btn ghost" type="button" data-act="startnow">Start the plan today</button>
+      <div class="fld"><span class="lab">Swims per week</span><div class="opts" role="radiogroup" aria-label="Swims per week">${[2, 3, 4].map(n => opt('radio', 'perWeek', n, n, d.perWeek === n, 'cfgPer' + n)).join('')}</div></div>
+      <div class="fld"><span class="lab">Swim days (pick ${d.perWeek})</span><div class="days">${order.map(n => opt('checkbox', 'day', n, DOW[n], d.days.includes(n), 'cfgDay' + n)).join('')}</div>
+        <p class="hint">The long swim goes on your last swim day of the week. A weekend day suits it.</p></div>
+      <div class="fld"><span class="lab">Pool length</span><div class="opts" role="radiogroup" aria-label="Pool length">${opt('radio', 'pool', 25, '25 m', d.pool === 25, 'cfgPool25')}${opt('radio', 'pool', 50, '50 m', d.pool === 50, 'cfgPool50')}</div></div>
+      <div class="fld"><span class="lab">Longest swim before the race</span><div class="opts" role="radiogroup" aria-label="Longest swim before the race">${[1600, 2000, 2400].map(n => opt('radio', 'peak', n, fmtDist(n), d.peak === n, 'cfgPeak' + n)).join('')}</div>
+        <p class="hint">The race is 1.6 km. Going past it in training gives you a margin on the day.</p></div>
+      <p class="hint" id="cfgPrev">${draftPreview(d)}</p><p class="err" id="cfgErr" role="alert"></p>
+      <button class="btn" data-act="apply">${state.cfg.setup ? 'Update plan' : 'Build my plan'}</button></section>
+      <p class="legend">Swims you have ticked stay ticked by date when the plan changes. Your logged swims and times are kept.</p>`;
+  }
+
+  const VIEWS = { today: viewToday, plan: viewPlan, progress: viewProgress, race: viewRace, setup: viewSetup };
   function render() {
-    document.getElementById('hd').innerHTML = viewHeader();
-    document.getElementById('view').innerHTML = VIEWS[tab]();
-    Array.prototype.forEach.call(document.querySelectorAll('.tabs button'), function (b) {
-      if (b.dataset.tab === tab) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
-    });
+    const det = tab === 'today' && openKey ? PL.byKey[openKey] : null;
+    $('hd').hidden = $('rope').hidden = !!det;
+    if (!det) $('hd').innerHTML = viewHeader();
+    $('view').innerHTML = det ? viewDetail(det) : VIEWS[tab]();
+    document.querySelectorAll('.tabs button').forEach(b => { if (b.dataset.tab === tab) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
   }
-  function top() { try { window.scrollTo(0, 0); } catch (e) { } }
+  const top = () => { try { window.scrollTo(0, 0); } catch (e) { /* not scrollable here */ } };
+  const newDraft = () => Object.assign({}, state.cfg, { days: state.cfg.days.slice(), ttDist: 100, ttTime: '' });
+  function go(t) { tab = t; openKey = null; finishing = false; editing = false; if (t === 'setup') draft = newDraft(); render(); top(); }
 
-  document.addEventListener('click', function (e) {
-    var b = e.target.closest && e.target.closest('[data-act]');
-    if (!b) return;
-    var a = b.dataset.act;
-    if (a === 'tab') { tab = b.dataset.tab; render(); top(); }
-    else if (a === 'prev') { if (wk > 0) { wk--; render(); top(); } }
-    else if (a === 'next') { if (wk < N - 1) { wk++; render(); top(); } }
-    else if (a === 'goto') { wk = +b.dataset.w; tab = 'week'; render(); top(); }
-    else if (a === 'toggle') {
-      var k = b.dataset.key;
-      if (state.done[k]) delete state.done[k]; else state.done[k] = iso(today());
-      save(); render();
+  /* ---------- saving results ---------- */
+  function commit(s, r) {
+    const d = iso(today());
+    state.done[s.key] = d; delete state.skip[s.key];
+    state.res[s.key] = { feel: r.feel || 0, t: Math.round(r.t || 0), g: r.g ? 1 : 0, reps: r.reps || [] };
+    if (r.tt && s.tt) { state.tt.push({ id: uid(), date: d, dist: s.tt, secs: r.tt }); state.tt.sort(byDate); }
+    if (r.non && s.cont && !state.log.some(e => e.date === d && e.m === s.cont)) { state.log.push({ id: uid(), date: d, m: s.cont, ow: !!r.ow }); state.log.sort(byDate); }
+    save();
+  }
+  function readFin(s, g) {
+    const err = $('finErr'), r = { feel: 0, g: g ? 1 : 0 };
+    const f = document.querySelector('#finForm input[name="feel"]:checked');
+    if (f) r.feel = +f.value;
+    const ttEl = $('finTT'), tEl = $('finTime');
+    if (ttEl && ttEl.value.trim()) {
+      const v = parseT(ttEl.value), p = v / s.tt * 100;
+      if (!(p >= 40 && p <= 600)) { err.textContent = 'Enter your trial time as minutes and seconds, like 4:30.'; return null; }
+      r.tt = v;
     }
-    else if (a === 'del') {
-      state.log = state.log.filter(function (x) { return x.id !== b.dataset.id; });
-      save(); render();
+    if (tEl && tEl.value.trim()) {
+      const v = parseT(tEl.value);
+      if (!(v > 0)) { err.textContent = 'Enter the time as minutes and seconds, like 38:00.'; return null; }
+      r.t = v;
     }
+    r.non = !!($('finNon') && $('finNon').checked);
+    r.ow = !!($('finOW') && $('finOW').checked);
+    return r;
+  }
+
+  /* ---------- guided workout ---------- */
+  let AC = null, wl = null, tickId = 0;
+  function beep(freq, dur) {
+    if (!snd || !AC) return;
+    try {
+      const o = AC.createOscillator(), g = AC.createGain();
+      o.frequency.value = freq; g.gain.value = 0.2; o.connect(g); g.connect(AC.destination);
+      o.start(); o.stop(AC.currentTime + dur);
+    } catch (e) { /* no audio here */ }
+  }
+  const buzz = ms => { try { if (navigator.vibrate) navigator.vibrate(ms); } catch (e) { /* no vibration */ } };
+  function awake() { try { if (navigator.wakeLock && !wl) navigator.wakeLock.request('screen').then(l => { wl = l; l.addEventListener('release', () => { wl = null; }); }).catch(() => { }); } catch (e) { /* no wake lock */ } }
+  function expand(s) {
+    const items = [];
+    s.steps.forEach((st, si) => {
+      const nx = s.steps[si + 1];
+      for (let r = 0; r < st.reps; r++) {
+        const last = r === st.reps - 1;
+        items.push({ kind: st.kind, r: r + 1, n: st.reps, dist: st.dist, zone: st.zone, label: st.label, rest: !last ? st.rest : (nx && nx.kind === st.kind ? st.rest : 0) });
+      }
+    });
+    return items;
+  }
+  function startPlayer(key) {
+    const s = PL.byKey[key];
+    if (!s) return;
+    editing = false;
+    P = { key, items: expand(s), i: 0, phase: 'ready', t0: 0, restEnd: 0, started: 0, end: 0, splits: [], confirm: false, lastB: 0 };
+    finishing = false;
+    clearInterval(tickId); tickId = setInterval(tick, 200);
+    renderPlayer();
+  }
+  function closePlayer() {
+    clearInterval(tickId); P = null;
+    try { if (wl) wl.release(); } catch (e) { /* already released */ }
+    wl = null;
+    renderPlayer(); render();
+  }
+  const itemTarget = it => { const p = it.zone !== 'max' && pace(it.zone); return p ? p * it.dist / 100 : 0; };
+  function itemHead(it) { return `<b>${esc(it.kind === 'drill' && it.label ? it.label : KIND[it.kind])}</b>${it.n > 1 ? ' · rep ' + it.r + ' of ' + it.n : ''}`; }
+  function itemZone(it) { const z = ZONES[it.zone], tg = itemTarget(it); return `${pips(z.lvl)}${z.name}${tg ? ' · aim for ' + fmtT(tg) : ''}`; }
+  function renderPlayer() {
+    const el = $('player');
+    if (!P) { el.hidden = true; el.innerHTML = ''; document.body.classList.remove('lock'); return; }
+    const s = PL.byKey[P.key];
+    el.hidden = false; el.className = 'player onpool ' + tyc(s); document.body.classList.add('lock');
+    if (P.phase === 'finish') {
+      const reps = P.items.map((it, i) => P.splits[i] ? [it.dist, Math.round(P.splits[i]), it.kind === 'main' && it.zone !== 'easy' ? 1 : 0] : null).filter(Boolean);
+      const rs = repStats(reps), tti = P.items.findIndex(it => it.zone === 'max'), tgt = pace(mainStep(s).zone);
+      P.result = { t: (P.end - P.started) / 1000, reps, tt: tti >= 0 && P.splits[tti] ? Math.round(P.splits[tti]) : 0 };
+      el.innerHTML = `<div class="in"><div class="plsum"><p class="plk">Workout complete</p><p class="plclock">${fmtT(P.result.t)}</p><p class="plz">${esc(s.title)} · ${num(s.metres)} m</p>
+        ${rs ? `<p class="plcue">Main set average ${fmtT(rs.avg)} per 100 m${tgt && mainStep(s).zone !== 'max' ? ', target ' + fmtT(tgt) : ''}</p><div class="reps">${rs.chips}</div>` : ''}</div>
+        <div class="plsheet">${finForm(s, P.result)}</div></div>`;
+      return;
+    }
+    const it = P.items[P.i], nx = P.items[P.i + 1], z = ZONES[it.zone];
+    let body, btn;
+    if (P.phase === 'ready') {
+      body = `<p class="plk">${P.i === 0 ? 'First up' : 'Up next'} · ${itemHead(it)}</p><p class="pldist">${num(it.dist)} m</p><p class="plz">${itemZone(it)}</p><p class="plcue">${z.cue}${it.kind !== 'drill' && it.label ? ' ' + esc(it.label.charAt(0).toUpperCase() + it.label.slice(1)) + '.' : ''}</p>`;
+      btn = `<button class="plmain" data-act="plmain">${P.i === 0 ? 'Start workout' : 'Start'}</button>`;
+    } else if (P.phase === 'swim') {
+      body = `<p class="plk">${itemHead(it)}</p><p class="plclock" id="plClock" aria-live="off">${fmtT((Date.now() - P.t0) / 1000)}</p><p class="plset">${num(it.dist)} m${it.dist > PL.pool ? ' · ' + (it.dist / PL.pool) + ' lengths' : ''}</p><p class="plz">${itemZone(it)}</p>`;
+      btn = `<button class="plmain" data-act="plmain">Done</button>`;
+    } else {
+      const last = P.splits[P.i], tg = itemTarget(it), df = tg ? Math.round(last - tg) : 0;
+      body = `<p class="plk">Rest</p><p class="plclock rest" id="plClock">${Math.max(0, Math.ceil((P.restEnd - Date.now()) / 1000))}</p>
+        <p class="plset">Last rep ${fmtT(last)}${tg ? (Math.abs(df) < 2 ? ', on target' : ', ' + Math.abs(df) + ' s ' + (df < 0 ? 'faster' : 'slower') + ' than target') : ''}</p>
+        <p class="plcue">Next: ${num(nx.dist)} m ${ZONES[nx.zone].name.toLowerCase()}${nx.n > 1 ? ', rep ' + nx.r + ' of ' + nx.n : ''}. The clock starts when the rest ends.</p>`;
+      btn = `<button class="plmain alt" data-act="plmain">Go now</button>`;
+    }
+    el.innerHTML = `<div class="in"><div class="plbar"><button class="plbtn" data-act="plclose" aria-label="End workout">${ICON_X}</button>
+      <p class="plprog">Step ${P.i + 1} of ${P.items.length}</p><button class="plbtn" data-act="plsound" aria-pressed="${snd}">Sound ${snd ? 'on' : 'off'}</button></div>
+      <div class="pltrack"><i style="width:${Math.round(100 * P.i / P.items.length)}%"></i></div>
+      ${P.confirm ? `<div class="plconfirm"><p>End this workout? The times from this session will not be saved.</p><div class="btnrow"><button class="btn ghost" data-act="plkeep">Keep going</button><button class="btn" data-act="plend">End workout</button></div></div>` : ''}
+      <div class="plbody">${body}</div>${btn}
+      <div class="plfoot"><button class="plmini" data-act="plback"${P.i === 0 && P.phase === 'ready' ? ' disabled' : ''}>Back a step</button><button class="plmini" data-act="plskip">Skip this step</button></div></div>`;
+  }
+  function tick() {
+    if (!P) return;
+    const now = Date.now(), c = $('plClock');
+    if (P.phase === 'swim') { if (c) c.textContent = fmtT((now - P.t0) / 1000); }
+    else if (P.phase === 'rest') {
+      const left = Math.ceil((P.restEnd - now) / 1000);
+      if (left <= 0) { P.i++; P.phase = 'swim'; P.t0 = P.restEnd; beep(880, 0.5); buzz(300); renderPlayer(); return; }
+      if (left <= 3 && left !== P.lastB) { P.lastB = left; beep(440, 0.12); }
+      if (c) c.textContent = String(left);
+    }
+  }
+  function plMain() {
+    const now = Date.now(), it = P.items[P.i];
+    if (P.phase === 'ready') {
+      try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); if (AC.state === 'suspended') AC.resume(); } catch (e) { AC = null; }
+      awake();
+      if (!P.started) P.started = now;
+      P.phase = 'swim'; P.t0 = now;
+    } else if (P.phase === 'swim') {
+      if (now - P.t0 < 2000) return;   /* ignore a double tap on Start */
+      P.splits[P.i] = (now - P.t0) / 1000;
+      if (P.i === P.items.length - 1) { P.phase = 'finish'; P.end = now; }
+      else if (it.rest > 0) { P.phase = 'rest'; P.restEnd = now + it.rest * 1000; P.lastB = 0; }
+      else { P.i++; P.phase = 'ready'; }
+    } else if (P.phase === 'rest') { P.i++; P.phase = 'swim'; P.t0 = now; }
+    renderPlayer();
+  }
+
+  /* ---------- events ---------- */
+  function applyDraft() {
+    const d = draft, err = $('cfgErr'), fail = m => { err.textContent = m; };
+    if (!ISO_RE.test(d.start) || !ISO_RE.test(d.race)) return fail('Pick a start date and a race date.');
+    if (!(d.level >= 0 && d.level <= 2400)) return fail('Enter your longest non-stop swim in metres, from 0 to 2 400.');
+    if (!validRace(d)) return fail('Pick a race date between 6 and 40 weeks after the plan start.');
+    if (d.days.length !== d.perWeek) return fail('Pick ' + d.perWeek + ' swim days.');
+    let tt = 0;
+    if (d.ttTime.trim()) {
+      tt = parseT(d.ttTime);
+      const p = tt / d.ttDist * 100;
+      if (!(p >= 40 && p <= 600)) return fail('Enter the timed swim as minutes and seconds, like 2:10.');
+    }
+    state.cfg = normCfg(Object.assign({}, d, { setup: true }));
+    if (tt) { state.tt.push({ id: uid(), date: iso(today()), dist: d.ttDist, secs: tt }); state.tt.sort(byDate); }
+    rebuild(); wk = curWeek(); nudgeOff = true;
+    save(); go('today');
+  }
+  const ACTS = {
+    tab: b => go(b.dataset.tab),
+    prev: () => { if (wk > 0) { wk--; render(); } },
+    next: () => { if (wk < PL.N - 1) { wk++; render(); } },
+    goto: b => { wk = +b.dataset.w; go('today'); },
+    open: b => { const s = PL.byKey[b.dataset.key]; if (!s) return; tab = 'today'; wk = s.w; openKey = s.key; finishing = false; editing = false; render(); top(); },
+    back: () => { openKey = null; finishing = false; editing = false; render(); top(); },
+    skip: b => { state.skip[b.dataset.key] = 1; save(); render(); },
+    unskip: b => { delete state.skip[b.dataset.key]; save(); render(); },
+    edit: () => { const s = PL.byKey[openKey]; if (!s) return; edDraft = s.steps.map(x => Object.assign({}, x)); editing = true; render(); top(); },
+    edadd: () => { syncEd(); const i = edDraft.findIndex(x => x.kind === 'cd'); edDraft.splice(i < 0 ? edDraft.length : i, 0, { kind: 'main', reps: 4, dist: 100, zone: 'steady', rest: 20, label: '' }); render(); },
+    edrm: b => { syncEd(); edDraft.splice(+b.dataset.i, 1); render(); },
+    edsave: saveEd,
+    edcancel: () => { editing = false; render(); top(); },
+    edreset: () => { delete state.edits[openKey]; editing = false; applyMoves(); save(); render(); top(); },
+    editres: () => { finishing = true; render(); const f = $('finForm'); if (f && f.scrollIntoView) f.scrollIntoView({ block: 'center' }); },
+    finish: () => { finishing = true; render(); const f = $('finForm'); if (f && f.scrollIntoView) f.scrollIntoView({ block: 'center' }); },
+    cancelfin: () => { finishing = false; render(); },
+    undo: b => { delete state.done[b.dataset.key]; delete state.res[b.dataset.key]; save(); render(); },
+    move: b => { const s = PL.byKey[b.dataset.key]; if (!s) return; if (b.dataset.to === s.key) delete state.moved[s.key]; else state.moved[s.key] = b.dataset.to; applyMoves(); save(); render(); },
+    del: b => { state.log = state.log.filter(x => x.id !== b.dataset.id); save(); render(); },
+    deltt: b => { state.tt = state.tt.filter(x => x.id !== b.dataset.id); save(); render(); },
+    replan: () => { go('setup'); draft.start = iso(today()); const best = state.log.reduce((x, e) => Math.max(x, e.m), 0); if (best > draft.level) draft.level = Math.min(2400, best); render(); },
+    nudgeoff: () => { nudgeOff = true; render(); },
+    startnow: () => { draft.start = iso(today()); $('cfgStart').value = draft.start; $('cfgPrev').textContent = draftPreview(draft); },
+    apply: applyDraft,
+    play: b => startPlayer(b.dataset.key),
+    plmain: plMain,
+    plclose: () => { if (!P.started) closePlayer(); else { P.confirm = true; renderPlayer(); } },
+    plkeep: () => { P.confirm = false; renderPlayer(); },
+    plend: closePlayer,
+    plsound: () => { snd = !snd; ls.set(SND_KEY, snd ? 'on' : 'off'); renderPlayer(); },
+    plback: () => { if (P.phase === 'ready' && P.i > 0) P.i--; P.phase = 'ready'; delete P.splits[P.i]; renderPlayer(); },
+    plskip: () => { if (P.i === P.items.length - 1) { P.phase = 'finish'; P.end = Date.now(); if (!P.started) P.started = P.end; } else { P.i++; P.phase = 'ready'; } renderPlayer(); }
+  };
+  document.addEventListener('click', e => {
+    const b = e.target.closest && e.target.closest('[data-act]');
+    if (b && !b.disabled && ACTS[b.dataset.act]) ACTS[b.dataset.act](b);
   });
-  document.addEventListener('submit', function (e) {
-    if (!e.target || e.target.id !== 'logForm') return;
+  document.addEventListener('change', e => {
+    const t = e.target;
+    if (!t || tab !== 'setup' || !draft) return;
+    if (t.id === 'cfgLevel') draft.level = t.value === '' ? NaN : parseInt(t.value, 10);
+    else if (t.id === 'cfgStart') draft.start = t.value;
+    else if (t.id === 'cfgRace') draft.race = t.value;
+    else if (t.id === 'cfgTTDist') draft.ttDist = +t.value;
+    else if (t.id === 'cfgTTTime') draft.ttTime = t.value;
+    else if (t.name === 'perWeek') { draft.perWeek = +t.value; draft.days = PRESETS[draft.perWeek].slice(); render(); return; }
+    else if (t.name === 'pool') draft.pool = +t.value === 50 ? 50 : 25;
+    else if (t.name === 'peak') draft.peak = +t.value;
+    else if (t.name === 'day') { const n = +t.value, i = draft.days.indexOf(n); if (t.checked && i < 0) draft.days.push(n); else if (!t.checked && i >= 0) draft.days.splice(i, 1); }
+    const pv = $('cfgPrev'); if (pv) pv.textContent = draftPreview(draft);
+  });
+  document.addEventListener('submit', e => {
+    const id = e.target && e.target.id;
+    if (!id) return;
     e.preventDefault();
-    var m = parseInt(document.getElementById('logM').value, 10);
-    var d = document.getElementById('logD').value;
-    var err = document.getElementById('logErr');
-    if (!(m >= 25 && m <= 10000)) { err.textContent = 'Enter the distance in metres, from 25 to 10 000.'; return; }
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(d) || d > iso(today())) { err.textContent = 'Pick today or an earlier date.'; return; }
-    state.log.push({ id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), date: d, m: m, ow: document.getElementById('logOW').checked });
-    state.log.sort(function (a, b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : 0; });
-    save(); render();
+    if (id === 'finForm') {
+      const g = P && P.phase === 'finish', s = PL.byKey[g ? P.key : openKey];
+      if (!s) return;
+      const r = readFin(s, g);
+      if (!r) return;
+      if (g) { r.t = P.result.t; r.reps = P.result.reps; openKey = s.key; tab = 'today'; }
+      if (!g && state.done[s.key]) { state.res[s.key] = Object.assign({ g: 0, reps: [] }, state.res[s.key], { feel: r.feel, t: Math.round(r.t || 0) }); save(); }
+      else commit(s, r);
+      finishing = false;
+      if (g) closePlayer(); else render();
+      top();
+    } else if (id === 'logForm') {
+      const m = parseInt($('logM').value, 10), d = $('logD').value, err = $('logErr');
+      if (!(m >= 25 && m <= 10000)) { err.textContent = 'Enter the distance in metres, from 25 to 10 000.'; return; }
+      if (!ISO_RE.test(d) || d > iso(today())) { err.textContent = 'Pick today or an earlier date.'; return; }
+      state.log.push({ id: uid(), date: d, m, ow: $('logOW').checked }); state.log.sort(byDate);
+      save(); render();
+    } else if (id === 'ttForm') {
+      const dist = +$('ttDist').value, secs = parseT($('ttTime').value), d = $('ttDate').value, err = $('ttErr'), p = secs / dist * 100;
+      if (!(p >= 40 && p <= 600)) { err.textContent = 'Enter the time as minutes and seconds, like 2:10.'; return; }
+      if (!ISO_RE.test(d) || d > iso(today())) { err.textContent = 'Pick today or an earlier date.'; return; }
+      state.tt.push({ id: uid(), date: d, dist, secs }); state.tt.sort(byDate);
+      save(); render();
+    }
   });
+  document.addEventListener('visibilitychange', () => { if (P && document.visibilityState === 'visible') { awake(); tick(); } });
+  window.addEventListener('hashchange', () => { const h = location.hash.slice(1); if (TABS.includes(h) && h !== tab) go(h); });
 
+  const h0 = location.hash.slice(1);
+  if (TABS.includes(h0)) { tab = h0; if (tab === 'setup') draft = newDraft(); }
   render();
   initCloud();
 })();
 </script>
-
 <script>if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){})})}</script>
 </body>
 </html>
