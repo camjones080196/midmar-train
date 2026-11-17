@@ -1154,7 +1154,11 @@ svg.chart { width: 100%; height: auto; display: block; }
         <p class="hint">The race is 1.6 km. Going past it in training gives you a margin on the day.</p></div>
       <p class="hint" id="cfgPrev">${draftPreview(d)}</p><p class="err" id="cfgErr" role="alert"></p>
       <button class="btn" data-act="apply">${state.cfg.setup ? 'Update plan' : 'Build my plan'}</button></section>
-      <p class="legend">Swims you have ticked stay ticked by date when the plan changes. Your logged swims and times are kept.</p>`;
+      <p class="legend">Swims you have ticked stay ticked by date when the plan changes. Your logged swims and times are kept.</p>
+      <section class="card" style="margin-top:14px"><h3>Move to the iPhone app</h3><p class="sub">Copies your plan, ticks, skips, moves, edited swims and times. In the iPhone app, open Setup, tap Import from web app, and paste.</p>
+        <div class="btnrow"><button class="btn ghost" data-act="export">Copy my data</button></div>
+        <p class="hint" id="expMsg" role="status" style="margin-top:8px"></p>
+        <textarea id="expText" readonly hidden style="width:100%;min-height:120px;margin-top:8px;font:12px ui-monospace,monospace;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);padding:8px"></textarea></section>`;
   }
 
   const VIEWS = { today: viewToday, plan: viewPlan, progress: viewProgress, race: viewRace, setup: viewSetup };
@@ -1347,6 +1351,15 @@ svg.chart { width: 100%; height: auto; display: block; }
     nudgeoff: () => { nudgeOff = true; render(); },
     startnow: () => { draft.start = iso(today()); $('cfgStart').value = draft.start; $('cfgPrev').textContent = draftPreview(draft); },
     apply: applyDraft,
+    export: () => {
+      const text = JSON.stringify({ midmarTrainer: 1, cfg: state.cfg, done: state.done, res: state.res, skip: state.skip, moved: state.moved, edits: state.edits, tt: state.tt, log: state.log });
+      const ta = $('expText'), msg = $('expMsg');
+      ta.value = text;
+      const fallback = () => { ta.hidden = false; ta.focus(); ta.select(); msg.textContent = 'Copy the text below, then paste it into the iPhone app.'; };
+      try {
+        navigator.clipboard.writeText(text).then(() => { msg.textContent = 'Copied. Paste it into the iPhone app under Setup, Import from web app.'; }, fallback);
+      } catch (e) { fallback(); }
+    },
     play: b => startPlayer(b.dataset.key),
     plmain: plMain,
     plclose: () => { if (!P.started) closePlayer(); else { P.confirm = true; renderPlayer(); } },
