@@ -23,9 +23,10 @@ final class TrainerStore {
         }
         loaded.config = loaded.config.normalized()
         state = loaded
-        plan = PlanEngine.build(loaded.config)
+        plan = PlanEngine.build(loaded.config, rebases: loaded.adapt)
         freshStart()
         resolve()
+        reviewPlan()
     }
 
     static var defaultURL: URL? {
@@ -165,6 +166,7 @@ final class TrainerStore {
         let day = Days.key(today)
         update { st in
             st.config = c.normalized()
+            st.adapt = []
             if let trial { st.trials.append(TimeTrial(date: day, dist: trial.dist, secs: trial.secs)) }
         }
     }
@@ -288,16 +290,31 @@ final class TrainerStore {
         c.start = Days.key(today)
         guard c.hasValidSpan, c.start != state.config.start else { return }
         state.config = c
+        state.adapt = []
         plan = PlanEngine.build(c)
         resolve()
+    }
+
+    /// Lets the coach look at recent training and adjust next week. Runs after every change,
+    /// and when the app opens so a new week is picked up.
+    func reviewPlan() {
+        guard Coach.review(state: state, today: today) != state.adapt else { return }
+        update { _ in }
+    }
+
+    /// The most recent change the coach made that still affects this week or later.
+    var latestAdjustment: Rebase? {
+        state.adapt.filter { $0.week >= currentWeek }.max { $0.week < $1.week }
     }
 
     private func update(_ change: (inout TrainerState) -> Void) {
         var s = state
         change(&s)
-        let rebuild = s.config != state.config
+        // The coach re-reads training after every change, so next week always reflects the latest swims.
+        s.adapt = Coach.review(state: s, today: today)
+        let rebuild = s.config != state.config || s.adapt != state.adapt
         state = s
-        if rebuild { plan = PlanEngine.build(s.config) }
+        if rebuild { plan = PlanEngine.build(s.config, rebases: s.adapt) }
         resolve()
         save()
     }

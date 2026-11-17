@@ -52,6 +52,7 @@ struct RootView: View {
         .onChange(of: phase) { _, newPhase in
             guard newPhase == .active else { return }
             store.freshStart()
+            store.reviewPlan()
             Task { await health.sync(into: store) }
         }
     }

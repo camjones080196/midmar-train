@@ -16,6 +16,9 @@ struct PlanView: View {
                     Text("The long swim builds from \(Fmt.dist(plan.weeks.first?.long ?? 0)) to \(Fmt.dist(plan.peak)), with a lighter week and a time trial every fourth week.")
                         .font(.system(size: 15)).foregroundStyle(Palette.muted)
                     WeeklyDistanceChart().frame(height: 170)
+                    Text("The plan adapts as you train. After each swim the coach looks at what you've done, how it felt, your longest non-stop swim and any time off, and can change next week.")
+                        .font(.system(size: 13)).foregroundStyle(Palette.muted)
+                    if let w = plan.warning { Text(w).font(.system(size: 14)).foregroundStyle(Palette.buoy) }
                 }
                 .padding(.vertical, 6)
                 Button {
@@ -63,7 +66,7 @@ struct WeekRow: View {
                 }
             VStack(alignment: .leading, spacing: 2) {
                 Text("\(Days.short(ws)) to \(Days.short(Days.add(ws, 6)))").font(.system(size: 15, weight: .semibold))
-                Text(week.focus).font(.system(size: 13)).foregroundStyle(Palette.muted)
+                Text(week.focus).font(.system(size: 13)).foregroundStyle(week.adjustment != nil ? Palette.water : Palette.muted)
             }
             Spacer()
             VStack(alignment: .trailing, spacing: 2) {

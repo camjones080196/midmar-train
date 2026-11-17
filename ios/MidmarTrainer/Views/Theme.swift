@@ -28,6 +28,8 @@ extension SessionType {
     var color: Color {
         switch self {
         case .tech: Palette.dyn(0x17594D, 0x66C7AD)
+        case .skills: Palette.dyn(0x0E7490, 0x67E8F9)
+        case .strength: Palette.dyn(0x9A3412, 0xFDBA74)
         case .build, .thr, .pyr: Palette.dyn(0x6D38D4, 0xC4A7FF)
         case .speed: Palette.dyn(0xB5175B, 0xFF8FB8)
         case .easy: Palette.dyn(0x4A7410, 0xA8D568)
@@ -41,6 +43,8 @@ extension SessionType {
     var brightColor: Color {
         switch self {
         case .tech: Color(hex: 0x66C7AD)
+        case .skills: Color(hex: 0x67E8F9)
+        case .strength: Color(hex: 0xFDBA74)
         case .build, .thr, .pyr: Color(hex: 0xC4A7FF)
         case .speed: Color(hex: 0xFF8FB8)
         case .easy: Color(hex: 0xA8D568)

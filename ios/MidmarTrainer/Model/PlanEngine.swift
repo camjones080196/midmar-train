@@ -67,8 +67,23 @@ struct PlanWeek: Identifiable {
     let focus: String
     let isRecovery: Bool
     let long: Int
+    /// The long swim this week builds toward, before any recovery-week cut.
+    let buildLong: Int
     let sessions: [Session]
+    /// The coach's change that took effect this week, if any.
+    let adjustment: Rebase?
     var metres: Int { sessions.reduce(0) { $0 + $1.metres } }
+}
+
+/// A change the coach made to the plan from one week on: the long swim restarts its build from
+/// `long`, and the other sessions are scaled by `scale`.
+struct Rebase: Codable, Hashable {
+    var week: Int
+    var long: Int
+    var scale = 1.0
+    var reason: String
+    /// The day the change was made, "yyyy-MM-dd"
+    var date: String
 }
 
 struct Phase: Hashable {
@@ -93,8 +108,19 @@ struct Plan {
     let sessions: [Session]
     let startLong: Int
     let growth: Double
+    /// The longest swim the last build week reaches.
+    let finalLong: Int
+    let rebases: [Rebase]
 
     var weekCount: Int { weeks.count }
+    /// Weeks before the taper and race week.
+    var buildWeeks: Int { max(0, weeks.count - 2) }
+
+    /// Set when the plan can no longer reach the race distance in training.
+    var warning: String? {
+        guard finalLong < Catalog.raceDistance else { return nil }
+        return "At this rate your longest swim before the race is \(Fmt.dist(finalLong)), short of the 1.6 km race. The plan builds as fast as is safe, so swimming the planned sessions is what closes the gap."
+    }
     var pool: Int { config.pool }
     var peak: Int { config.peak }
 
@@ -179,6 +205,11 @@ struct PlanConfig: Codable, Equatable {
 // MARK: - Plan builder
 
 enum PlanEngine {
+    /// Every swim except race day is at least this long.
+    static let minimumSession = 1000
+    /// The long swim never grows faster than this from one week to the next.
+    static let maxGrowth = 1.30
+
     private struct Draft {
         var type: SessionType
         var title: String
@@ -196,12 +227,32 @@ enum PlanEngine {
         var focus: String
         var rec: Bool
         var long: Int
+        var buildLong: Int
         var drafts: [Draft]
+        var adjustment: Rebase?
     }
 
-    private enum Quality { case tt, build, thr, speed, pyr, racePace }
+    private enum Quality: CaseIterable {
+        case trial, build, descend, fartlek, threshold, brokenMile, negative, speed, pyramid, fastStart, racePace
+    }
+    private enum Skills { case technique, openWater, kickPull, breathing }
 
-    static func build(_ input: PlanConfig) -> Plan {
+    /// The long swim for build week `t`, before any recovery-week cut, given the plan's start and
+    /// any later changes. Each change restarts a steady climb toward the peak.
+    static func ladder(_ t: Int, start a0: Double, peak: Int, buildWeeks tn: Int, rebases: [Rebase]) -> (value: Double, scale: Double, anchor: Rebase?) {
+        var anchorWeek = 0, anchorLong = a0, scale = 1.0
+        var anchor: Rebase?
+        for r in rebases.sorted(by: { $0.week < $1.week }) where r.week > 0 && r.week < tn && r.week <= t {
+            anchorWeek = r.week; anchorLong = Double(max(100, r.long)); scale = r.scale; anchor = r
+        }
+        let span = Double(tn - 1 - anchorWeek)
+        var g = span > 0 && anchorLong < Double(peak) ? pow(Double(peak) / anchorLong, 1 / span) : 1
+        g = min(max(g, 1), maxGrowth)
+        let v = min(Double(peak), anchorLong * pow(g, Double(t - anchorWeek)))
+        return (v, scale, anchor)
+    }
+
+    static func build(_ input: PlanConfig, rebases: [Rebase] = []) -> Plan {
         let cfg = input.normalized()
         let pool = cfg.pool, peak = cfg.peak
         let begin = cfg.startDate!, race = cfg.raceDate!
@@ -213,96 +264,197 @@ enum PlanEngine {
 
         func stp(_ v: Double) -> Int { pool == 50 ? 50 : (v < 500 ? 25 : 50) }
         func rnd(_ x: Double, _ s: Int) -> Int { max(s, Int((x / Double(s)).rounded()) * s) }
+        func rp(_ x: Double) -> Int { max(pool, Int((x / Double(pool)).rounded()) * pool) }
         func restFor(_ p: Double) -> Int { max(15, Int(((40 - 20 * p) / 5).rounded()) * 5) }
         func repDist(_ x: Double) -> Int {
             let d = x < 150 ? 50 : x < 300 ? 75 : x < 500 ? 100 : x < 1400 ? 200 : x < 1800 ? 300 : 400
             return max(pool, Int((Double(d) / Double(pool)).rounded(.up)) * pool)
         }
-        func wc(_ a: Double) -> (Int, Int) { a < 1000 ? (100, 50) : (200, 100) }
+        func warm(_ a: Double) -> SetStep { SetStep(.wu, 1, a < 1000 ? 200 : 300, .easy) }
+        func cool(_ a: Double) -> SetStep { SetStep(.cd, 1, a < 1000 ? 100 : 200, .easy) }
         func drill(_ t: Int) -> (name: String, how: String) { Catalog.drills[t % Catalog.drills.count] }
+        func n(_ total: Double, _ d: Int, min lo: Int = 2, max hi: Int = 30) -> Int { min(hi, max(lo, Int((total / Double(d)).rounded()))) }
 
-        func tech(_ t: Int, _ a: Double, _ p: Double) -> Draft {
-            let (w, c) = wc(a), total = min(800, 0.5 * a + 250), d = repDist(a * 0.5), dr = drill(t)
+        /// Pads a session to the minimum with easy aerobic 100s before the cool down.
+        func filled(_ d: Draft) -> Draft {
+            var d = d
+            guard !d.race else { return d }
+            let total = d.steps.reduce(0) { $0 + $1.metres }
+            guard total < minimumSession else { return d }
+            let reps = Int((Double(minimumSession - total) / 100).rounded(.up))
+            let i = d.steps.lastIndex { $0.kind == .cd } ?? d.steps.count
+            d.steps.insert(SetStep(.main, reps, 100, .easy, rest: 15, label: "aerobic"), at: i)
+            return d
+        }
+
+        // MARK: Sessions. `a` is the week's long swim, `p` progress through the plan, `s` the coach's scale.
+
+        func technique(_ t: Int, _ a: Double, _ p: Double, _ s: Double) -> Draft {
+            let dr = drill(t), d = repDist(a * 0.5)
             return Draft(type: .tech, title: "Technique", steps: [
-                SetStep(.wu, 1, w, .easy),
-                SetStep(.drill, 4, pool, .easy, rest: 15, label: dr.name),
-                SetStep(.main, max(2, Int((total / Double(d)).rounded())), d, .easy, rest: max(15, restFor(p) - 5), label: "long, smooth strokes"),
-                SetStep(.cd, 1, c, .easy)
-            ], note: "\(dr.name): \(dr.how)")
+                warm(a),
+                SetStep(.drill, 6, 50, .easy, rest: 15, label: dr.name),
+                SetStep(.main, n(min(900, 0.5 * a + 300) * s, d), d, .easy, rest: max(15, restFor(p) - 5), label: "long, smooth strokes"),
+                SetStep(.main, 4, 50, .steady, rest: 15, label: "breathe every 3"),
+                cool(a)
+            ], note: "\(dr.name): \(dr.how) Then hold the same feel on the swims.")
         }
-        func buildSet(_ a: Double, _ p: Double) -> Draft {
-            let (w, c) = wc(a), total = min(1600, 1.2 * a + 300), d = repDist(a)
+        func breathing(_ t: Int, _ a: Double, _ s: Double) -> Draft {
+            Draft(type: .tech, title: "Breathing and rhythm", steps: [
+                warm(a),
+                SetStep(.drill, 4, 50, .easy, rest: 15, label: "6-kick switch"),
+                SetStep(.main, n(400 * s, 100), 100, .easy, rest: 20, label: "breathe every 3, both sides"),
+                SetStep(.main, n(300 * s, 50), 50, .steady, rest: 15, label: "long exhale underwater"),
+                SetStep(.main, 1, rp(max(200, min(600, a * 0.4))), .easy, label: "continuous, relaxed rhythm"),
+                cool(a)
+            ], note: "Steady breathing is what lets you keep swimming. Breathe out slowly underwater so each breath in is easy.")
+        }
+        func openWaterSkills(_ a: Double, _ s: Double) -> Draft {
+            Draft(type: .skills, title: "Open-water skills", steps: [
+                warm(a),
+                SetStep(.main, 6, 50, .steady, rest: 15, label: "sight forward every 6 strokes"),
+                SetStep(.main, n(400 * s, 100), 100, .steady, rest: 20, label: "turn without touching the wall"),
+                SetStep(.main, 4, 25, .fast, rest: 30, label: "start from treading water"),
+                SetStep(.main, 1, rp(max(300, min(800, a * 0.5))), .steady, label: "sight every 8 strokes, no push-offs"),
+                cool(a)
+            ], note: "Midmar has no walls and no black line. Practise lifting your eyes to sight, turning without a push-off, and starting from treading water.")
+        }
+        func kickPull(_ a: Double, _ s: Double) -> Draft {
+            Draft(type: .strength, title: "Kick and pull", steps: [
+                warm(a),
+                SetStep(.drill, n(400 * s, 100, min: 3, max: 8), 100, .steady, rest: 20, label: "pull with a buoy"),
+                SetStep(.drill, n(300 * s, 50, min: 4, max: 8), 50, .easy, rest: 15, label: "kick with a board"),
+                SetStep(.main, n(400 * s, 100, min: 3, max: 8), 100, .steady, rest: 20, label: "swim, strong catch"),
+                cool(a)
+            ], note: "A pull buoy builds your arms and catch; the kick set keeps your legs high, which matters in choppy water.")
+        }
+        func buildSet(_ a: Double, _ p: Double, _ s: Double) -> Draft {
+            let d = repDist(a)
             return Draft(type: .build, title: "Build intervals", steps: [
-                SetStep(.wu, 1, w, .easy),
-                SetStep(.main, max(2, Int((total / Double(d)).rounded())), d, .steady, rest: restFor(p)),
-                SetStep(.cd, 1, c, .easy)
+                warm(a), SetStep(.main, n(min(1600, 1.2 * a + 300) * s, d), d, .steady, rest: restFor(p)), cool(a)
             ])
         }
-        func threshold(_ a: Double, _ p: Double) -> Draft {
-            let (w, c) = wc(a), total = min(1600, 1.2 * a + 300), d = repDist(a)
+        func descend(_ a: Double, _ s: Double) -> Draft {
+            let rounds = a >= 800 ? 4 : 3
+            return Draft(type: .build, title: "Descending set", steps: [
+                warm(a),
+                SetStep(.drill, 4, 50, .easy, rest: 15, label: "build each length"),
+                SetStep(.main, Int((Double(rounds * 3) * s).rounded()), 100, .steady, rest: 15, label: "in rounds of 3, each 100 faster than the last"),
+                cool(a)
+            ], note: "Start each round easy and finish it strong. Learning to change pace is how you move through a crowd on race day.")
+        }
+        func fartlek(_ a: Double, _ s: Double) -> Draft {
+            let d = a >= 600 ? 400 : 200
+            return Draft(type: .build, title: "Fartlek", steps: [
+                warm(a), SetStep(.main, n(min(1200, a + 200) * s, d), d, .steady, rest: 30, label: "every 4th length fast"), cool(a)
+            ], note: "Surge for one length, then settle back into your steady rhythm without stopping.")
+        }
+        func threshold(_ a: Double, _ p: Double, _ s: Double) -> Draft {
+            let d = repDist(a)
             return Draft(type: .thr, title: "Threshold reps", steps: [
-                SetStep(.wu, 1, w, .easy),
-                SetStep(.main, max(2, Int((total / Double(d)).rounded())), d, .thr, rest: max(20, restFor(p))),
-                SetStep(.cd, 1, c, .easy)
+                warm(a), SetStep(.drill, 4, 50, .steady, rest: 15, label: "build each length"),
+                SetStep(.main, n(min(1600, 1.2 * a + 300) * s, d), d, .thr, rest: max(20, restFor(p))), cool(a)
             ])
         }
-        func speed(_ a: Double) -> Draft {
-            let (w, c) = wc(a), n = min(16, max(8, Int(((0.5 * a + 200) / 50).rounded())))
-            return Draft(type: .speed, title: "Speed set", steps: [
-                SetStep(.wu, 1, w, .easy),
-                SetStep(.drill, 4, pool, .steady, rest: 15, label: "build each length"),
-                SetStep(.main, n, 50, .fast, rest: 30),
-                SetStep(.main, 1, 200, .easy, label: "loosen off"),
-                SetStep(.cd, 1, c, .easy)
+        func brokenMile(_ a: Double, _ p: Double, _ s: Double) -> Draft {
+            let full = a >= 1000
+            let reps = full ? 16 : 8
+            return Draft(type: .thr, title: full ? "Broken mile" : "Half broken mile", steps: [
+                warm(a), SetStep(.main, Int((Double(reps) * s).rounded()), 100, .thr, rest: p > 0.7 ? 10 : 15, label: "race pace"), cool(a)
+            ], note: full ? "The whole race distance in 100s with short rests. Hold the same time on every rep; as the rests shrink, you are close to swimming it straight."
+                         : "Half the race distance in 100s. Keep every rep the same speed.")
+        }
+        func negativeSplit(_ a: Double, _ s: Double) -> Draft {
+            let d = a >= 900 ? 400 : 200
+            return Draft(type: .thr, title: "Negative splits", steps: [
+                warm(a), SetStep(.main, n(min(1200, a) * s, d, min: 2, max: 4), d, .steady, rest: 30, label: "second half faster than the first"),
+                SetStep(.main, 4, 50, .fast, rest: 20), cool(a)
+            ], note: "Start the Mile too fast and you pay for it at the end. These teach you to start controlled and finish strong.")
+        }
+        func speed(_ a: Double, _ s: Double) -> Draft {
+            Draft(type: .speed, title: "Speed set", steps: [
+                warm(a), SetStep(.drill, 4, pool, .steady, rest: 15, label: "build each length"),
+                SetStep(.main, Int(Double(min(16, max(8, Int(((0.5 * a + 200) / 50).rounded())))) * s), 50, .fast, rest: 30),
+                SetStep(.main, 1, 200, .easy, label: "loosen off"), cool(a)
             ])
         }
         func pyramid(_ a: Double) -> Draft {
-            let (w, c) = wc(a)
             let ds = a >= 1400 ? [100, 200, 300, 400, 300, 200, 100] : [100, 200, 300, 200, 100]
             return Draft(type: .pyr, title: "Pyramid",
-                         steps: [SetStep(.wu, 1, w, .easy)] + ds.map { SetStep(.main, 1, $0, .steady, rest: 20) } + [SetStep(.cd, 1, c, .easy)],
-                         ladder: ds)
+                         steps: [warm(a)] + ds.map { SetStep(.main, 1, $0, .steady, rest: 20) } + [cool(a)], ladder: ds)
+        }
+        func fastStart(_ a: Double, _ s: Double) -> Draft {
+            Draft(type: .speed, title: "Fast-start practice", steps: [
+                warm(a), SetStep(.main, Int(6 * s), 200, .steady, rest: 30, label: "first 50 fast, then settle"),
+                SetStep(.main, 1, rp(max(300, min(600, a * 0.4))), .easy, label: "settle into race rhythm"), cool(a)
+            ], note: "The mass start is a sprint for clear water. Practise going hard for 50 m, then settling into a pace you can hold.")
+        }
+        func racePace() -> Draft {
+            Draft(type: .thr, title: "Race-pace reps", steps: [
+                SetStep(.wu, 1, 300, .easy), SetStep(.main, 4, 200, .thr, rest: 30, label: "race pace"),
+                SetStep(.main, 4, 50, .fast, rest: 30, label: "fast start"), cool(1000)
+            ])
         }
         func trial(_ a: Double) -> Draft {
-            let (w, _) = wc(a), d = a >= 400 ? 400 : a >= 200 ? 200 : 100, dd = repDist(a * 0.5)
+            let d = a >= 400 ? 400 : a >= 200 ? 200 : 100, dd = repDist(a * 0.5)
             return Draft(type: .tt, title: "Time trial", steps: [
-                SetStep(.wu, 1, w, .easy),
+                warm(a),
                 SetStep(.drill, 4, pool, .steady, rest: 20, label: "build each length"),
                 SetStep(.main, 1, d, .max, label: "timed"),
                 SetStep(.main, max(2, Int((0.6 * a / Double(dd)).rounded())), dd, .easy, rest: 20, label: "aerobic"),
-                SetStep(.cd, 1, 100, .easy)
+                cool(a)
             ], note: "Push off from the wall, no dive. Swim the \(d) m evenly and check your time as you touch.", tt: d)
         }
         func longSwim(_ a: Double, _ p: Double, title: String?, note: String, ow: Bool) -> Draft {
-            let (w, c) = wc(a)
             let ai = Int(a.rounded())
             if a >= 400 {
                 return Draft(type: .long, title: title ?? "Long swim", steps: [
-                    SetStep(.wu, 1, w, .easy), SetStep(.main, 1, ai, .easy, label: "non-stop"), SetStep(.cd, 1, c, .easy)
+                    warm(a), SetStep(.main, 1, ai, .easy, label: "non-stop"), cool(a)
                 ], note: note, cont: ai, ow: ow)
             }
-            let d = max(pool, rnd(a * 0.5, pool)), n = max(3, Int((a * 2.5 / Double(d)).rounded(.up)))
+            let d = max(pool, rnd(a * 0.5, pool)), reps = max(3, Int((a * 2.5 / Double(d)).rounded(.up)))
             return Draft(type: .long, title: title ?? "Endurance set", steps: [
-                SetStep(.wu, 1, w, .easy), SetStep(.main, n, d, .easy, rest: restFor(p)), SetStep(.cd, 1, c, .easy)
+                warm(a), SetStep(.main, reps, d, .easy, rest: restFor(p)), cool(a)
             ], note: note)
         }
-        func easySwim(_ a: Double, _ p: Double) -> Draft {
-            let ev = rnd(a * 0.6, stp(a * 0.6)), (w, c) = wc(Double(ev))
+        func easySwim(_ a: Double, _ p: Double, _ s: Double) -> Draft {
+            let ev = rnd(a * 0.6 * s, stp(a * 0.6))
             if ev >= 400 {
-                return Draft(type: .easy, title: "Easy swim", steps: [
-                    SetStep(.wu, 1, w, .easy), SetStep(.main, 1, ev, .easy, label: "non-stop"), SetStep(.cd, 1, c, .easy)
-                ])
+                return Draft(type: .easy, title: "Easy swim", steps: [warm(a), SetStep(.main, 1, ev, .easy, label: "non-stop, relaxed"), cool(a)])
             }
-            let d = max(pool, rnd(Double(ev) * 0.5, pool)), n = max(3, Int((Double(ev) * 2.5 / Double(d)).rounded(.up)))
-            return Draft(type: .easy, title: "Easy swim", steps: [
-                SetStep(.wu, 1, w, .easy), SetStep(.main, n, d, .easy, rest: restFor(p)), SetStep(.cd, 1, c, .easy)
-            ])
+            let d = max(pool, rnd(Double(ev) * 0.5, pool)), reps = max(3, Int((Double(ev) * 2.5 / Double(d)).rounded(.up)))
+            return Draft(type: .easy, title: "Easy swim", steps: [warm(a), SetStep(.main, reps, d, .easy, rest: restFor(p)), cool(a)])
         }
-        func lineup(_ t: Int, _ a: Double, _ p: Double, title: String?, note: String, ow: Bool, q: Quality) -> [Draft] {
+
+        func quality(_ q: Quality, _ a: Double, _ p: Double, _ s: Double) -> Draft {
+            switch q {
+            case .trial: return trial(a)
+            case .build: return buildSet(a, p, s)
+            case .descend: return descend(a, s)
+            case .fartlek: return fartlek(a, s)
+            case .threshold: return threshold(a, p, s)
+            case .brokenMile: return brokenMile(a, p, s)
+            case .negative: return negativeSplit(a, s)
+            case .speed: return speed(a, s)
+            case .pyramid: return pyramid(a)
+            case .fastStart: return fastStart(a, s)
+            case .racePace: return racePace()
+            }
+        }
+        func skills(_ k: Skills, _ t: Int, _ a: Double, _ p: Double, _ s: Double) -> Draft {
+            switch k {
+            case .technique: return technique(t, a, p, s)
+            case .openWater: return openWaterSkills(a, s)
+            case .kickPull: return kickPull(a, s)
+            case .breathing: return breathing(t, a, s)
+            }
+        }
+
+        func lineup(_ t: Int, _ a: Double, _ p: Double, _ s: Double, title: String?, note: String, ow: Bool, q: Quality, k: Skills) -> [Draft] {
             var long = longSwim(a, p, title: title, note: note, ow: ow)
             if cfg.perWeek == 1 {
-                // One swim a week: the long swim carries a drill, and the time trial in trial weeks.
-                if q == .tt {
+                // One swim a week: the long swim carries a skill set, and the time trial in trial weeks.
+                if q == .trial {
                     let tr = trial(a)
                     long.steps.insert(contentsOf: [
                         SetStep(.drill, 4, pool, .steady, rest: 20, label: "build each length"),
@@ -313,52 +465,48 @@ enum PlanEngine {
                     long.title = long.cont != nil ? "Time trial and long swim" : "Time trial and endurance set"
                     long.note = [tr.note, "Rest as long as you need after the trial.", long.note].filter { !$0.isEmpty }.joined(separator: " ")
                 } else {
-                    let dr = drill(t)
-                    long.steps.insert(SetStep(.drill, 4, pool, .easy, rest: 15, label: dr.name), at: 1)
-                    long.note = [long.note, "\(dr.name): \(dr.how)"].filter { !$0.isEmpty }.joined(separator: " ")
+                    let extra: SetStep = k == .openWater ? SetStep(.main, 6, 50, .steady, rest: 15, label: "sight forward every 6 strokes")
+                        : k == .kickPull ? SetStep(.drill, 4, 100, .steady, rest: 20, label: "pull with a buoy")
+                        : SetStep(.drill, 6, 50, .easy, rest: 15, label: drill(t).name)
+                    long.steps.insert(extra, at: 1)
                 }
-                return [long]
+                return [filled(long)]
             }
-            var quality: Draft
-            switch q {
-            case .tt: quality = trial(a)
-            case .thr: quality = threshold(a, p)
-            case .speed: quality = speed(a)
-            case .pyr: quality = pyramid(a)
-            case .racePace:
-                quality = Draft(type: .thr, title: "Race-pace reps", steps: [
-                    SetStep(.wu, 1, 200, .easy), SetStep(.main, 4, 200, .thr, rest: 30), SetStep(.cd, 1, 100, .easy)
-                ])
-            case .build: quality = buildSet(a, p)
-            }
+            var qual = quality(q, a, p, s)
             if cfg.perWeek == 2 {
-                if !quality.steps.contains(where: { $0.kind == .drill }) {
+                if !qual.steps.contains(where: { $0.kind == .drill }) {
                     let dr = drill(t)
-                    quality.steps.insert(SetStep(.drill, 4, pool, .easy, rest: 15, label: dr.name), at: 1)
-                    quality.note = "\(dr.name): \(dr.how)"
+                    qual.steps.insert(SetStep(.drill, 6, 50, .easy, rest: 15, label: dr.name), at: 1)
+                    qual.note = [qual.note, "\(dr.name): \(dr.how)"].filter { !$0.isEmpty }.joined(separator: " ")
                 }
-                return [quality, long]
+                return [filled(qual), filled(long)]
             }
-            return cfg.perWeek == 3 ? [tech(t, a, p), quality, long] : [tech(t, a, p), quality, easySwim(a, p), long]
+            let sk = skills(k, t, a, p, s)
+            return (cfg.perWeek == 3 ? [sk, qual, long] : [sk, qual, easySwim(a, p, s), long]).map(filled)
         }
 
-        // Long-swim ladder: geometric growth, with a lighter week every fourth week.
+        // Long-swim ladder, restarted from each of the coach's changes.
         let a0 = cfg.startLong
-        var a = [Int](repeating: 0, count: max(tn, 0))
-        var rec = [Bool](repeating: false, count: max(tn, 0))
-        var bv = [Double](repeating: 0, count: max(tn, 0))
-        for t in 0..<max(tn, 0) {
-            let prog = tn > 1 ? Double(t) / Double(tn - 1) : 1
-            bv[t] = a0 * pow(Double(peak) / a0, prog)
-            rec[t] = t % 4 == 3 && t < tn - 1
+        let weeksIn = max(tn, 0)
+        var a = [Int](repeating: 0, count: weeksIn)
+        var rec = [Bool](repeating: false, count: weeksIn)
+        var bv = [Double](repeating: 0, count: weeksIn)
+        var scale = [Double](repeating: 1, count: weeksIn)
+        var adjust = [Rebase?](repeating: nil, count: weeksIn)
+        for t in 0..<weeksIn {
+            let l = ladder(t, start: a0, peak: peak, buildWeeks: tn, rebases: rebases)
+            bv[t] = l.value
+            scale[t] = l.scale
+            if let r = l.anchor, r.week == t { adjust[t] = r }
+            rec[t] = t % 4 == 3 && t < tn - 1 && adjust[t] == nil
             let v = rec[t] ? bv[t] * 0.75 : bv[t]
             a[t] = rnd(v, stp(v))
         }
         var firstFour = -1
-        if cfg.level < 400 { firstFour = (0..<max(tn, 0)).first { !rec[$0] && a[$0] >= 400 } ?? -1 }
+        if cfg.level < 400 { firstFour = (0..<weeksIn).first { !rec[$0] && a[$0] >= 400 } ?? -1 }
 
         // Open-water weeks, spread over the weeks where the long swim is 800 m or more.
-        let cand = (0..<max(tn, 0)).filter { !rec[$0] && a[$0] >= 800 }
+        let cand = (0..<weeksIn).filter { !rec[$0] && a[$0] >= 800 }
         let picks = cand.count <= Catalog.openWaterGoal
             ? Array(cand.indices)
             : (0..<4).map { Int((Double($0) * Double(cand.count - 1) / 3).rounded()) }
@@ -375,18 +523,24 @@ enum PlanEngine {
             return codes.count - 1
         }
 
+        let baseQuality: [Quality] = [.build, .descend, .fartlek]
+        let enduranceQuality: [Quality] = [.threshold, .brokenMile, .negative, .speed, .pyramid, .fastStart]
+        let baseSkills: [Skills] = [.technique, .breathing, .kickPull]
+        let enduranceSkills: [Skills] = [.technique, .openWater, .kickPull, .breathing]
+
         var weeks: [DraftWeek] = []
-        var qi = 0
-        for t in 0..<max(tn, 0) {
+        var bi = 0, ei = 0, si = 0
+        for t in 0..<weeksIn {
             let prog = tn > 1 ? Double(t) / Double(tn - 1) : 1
             var title: String?
             var note = ""
             var focus: String
-            let code = bv[t] < 400 ? "base" : "end"
+            let isBase = bv[t] < 400
+            let code = isBase ? "base" : "end"
             if t == tn - 1 {
                 title = "Milestone swim"
-                note = peak > 1600 ? "\(Fmt.dist(peak)) is \(peak - 1600) m more than the race." : "This is the full race distance."
-                focus = "Milestone week: \(Fmt.dist(peak)) non-stop."
+                note = a[t] > 1600 ? "\(Fmt.dist(a[t])) is \(a[t] - 1600) m more than the race." : a[t] == 1600 ? "This is the full race distance." : ""
+                focus = "Milestone week: \(Fmt.dist(a[t])) non-stop."
             } else if t == firstFour {
                 title = "Milestone swim"
                 note = "Your first \(Fmt.num(a[t])) m without stopping. If you feel good at the end, keep going a little further."
@@ -407,36 +561,43 @@ enum PlanEngine {
             }
             var q: Quality
             if rec[t] || (t == 0 && cfg.level >= 100) {
-                q = .tt
-            } else if bv[t] < 400 {
-                q = .build
+                q = .trial
+            } else if isBase {
+                q = baseQuality[bi % baseQuality.count]; bi += 1
             } else {
-                q = [Quality.thr, .speed, .pyr][qi % 3]
-                if q == .pyr && a[t] < 600 { q = .thr }
-                qi += 1
+                q = enduranceQuality[ei % enduranceQuality.count]; ei += 1
+                if q == .pyramid && a[t] < 600 { q = .threshold }
             }
-            if t == 0 && q == .tt { focus = "Start with a time trial to set your paces." }
-            weeks.append(DraftWeek(phase: phaseIndex(code), focus: focus, rec: rec[t], long: a[t],
-                                   drafts: lineup(t, Double(a[t]), prog, title: title, note: note, ow: ow, q: q)))
+            var k = (isBase ? baseSkills : enduranceSkills)[si % (isBase ? baseSkills.count : enduranceSkills.count)]
+            si += 1
+            if ow { k = .openWater }
+            if t == 0 && q == .trial { focus = "Start with a time trial to set your paces." }
+            if let r = adjust[t] { focus = "Adjusted: \(r.reason) " + focus }
+            weeks.append(DraftWeek(phase: phaseIndex(code), focus: focus, rec: rec[t], long: a[t], buildLong: rnd(bv[t], stp(bv[t])),
+                                   drafts: lineup(t, Double(a[t]), prog, scale[t], title: title, note: note, ow: ow, q: q, k: k),
+                                   adjustment: adjust[t]))
         }
 
         // Taper week
-        let taperLong = rnd(Double(peak) * 0.65, stp(Double(peak) * 0.65))
-        weeks.append(DraftWeek(phase: phaseIndex("taper"), focus: "Taper. Less volume, same sharpness.", rec: false, long: taperLong,
-                               drafts: lineup(tn, Double(taperLong), 1, title: nil, note: "", ow: false, q: .racePace)))
+        let finalLong = a.last ?? Int(a0)
+        let taperLong = rnd(Double(max(finalLong, 1000)) * 0.65, stp(Double(finalLong) * 0.65))
+        weeks.append(DraftWeek(phase: phaseIndex("taper"), focus: "Taper. Less volume, same sharpness.", rec: false, long: taperLong, buildLong: taperLong,
+                               drafts: lineup(tn, Double(taperLong), 1, 1, title: nil, note: "", ow: false, q: .racePace, k: .openWater)))
 
         // Race week
         let pre = Array(offs.filter { $0 <= raceOff - 2 }.suffix(2))
         var raceDrafts: [Draft] = pre.indices.map { i in
-            i == 0 && pre.count == 2
-                ? Draft(type: .easy, title: "Easy swim", steps: [SetStep(.wu, 1, 200, .easy), SetStep(.main, 4, 50, .fast, rest: 30, label: "quick, not flat out"), SetStep(.cd, 1, 100, .easy)])
-                : Draft(type: .easy, title: "Shake-out", steps: [SetStep(.wu, 1, 200, .easy), SetStep(.main, 4, pool, .fast, rest: 30), SetStep(.cd, 1, 100, .easy)])
+            filled(i == 0 && pre.count == 2
+                ? Draft(type: .easy, title: "Easy swim", steps: [SetStep(.wu, 1, 300, .easy), SetStep(.main, 4, 50, .fast, rest: 30, label: "quick, not flat out"),
+                                                                 SetStep(.main, 1, 400, .easy, label: "relaxed"), SetStep(.cd, 1, 100, .easy)])
+                : Draft(type: .easy, title: "Shake-out", steps: [SetStep(.wu, 1, 300, .easy), SetStep(.main, 4, 50, .fast, rest: 30, label: "fast start, then settle"),
+                                                                 SetStep(.main, 1, 400, .easy, label: "sight every 8 strokes"), SetStep(.cd, 1, 100, .easy)]))
         }
         raceDrafts.append(Draft(type: .race, title: "Race day",
                                 steps: [SetStep(.race, 1, Catalog.raceDistance, .thr, label: "open water at Midmar Dam")],
                                 note: "Check your entry confirmation for the day and wave you swim, and tick this off on that day. Use the same goggles you trained in.",
                                 ow: true, race: true))
-        weeks.append(DraftWeek(phase: phaseIndex("taper"), focus: "Race week. Stay loose and rest.", rec: false, long: Catalog.raceDistance, drafts: raceDrafts))
+        weeks.append(DraftWeek(phase: phaseIndex("taper"), focus: "Race week. Stay loose and rest.", rec: false, long: Catalog.raceDistance, buildLong: Catalog.raceDistance, drafts: raceDrafts))
 
         // Dates
         let beginOff = Days.between(start, begin)
@@ -472,12 +633,13 @@ enum PlanEngine {
                 sessions.append(s)
                 all.append(s)
             }
-            planWeeks.append(PlanWeek(index: w, phase: wk.phase, focus: wk.focus, isRecovery: wk.rec, long: wk.long, sessions: sessions))
+            planWeeks.append(PlanWeek(index: w, phase: wk.phase, focus: wk.focus, isRecovery: wk.rec, long: wk.long, buildLong: wk.buildLong,
+                                      sessions: sessions, adjustment: wk.adjustment))
         }
 
         let meta: [String: (String, String)] = [
             "base": ("Base", "Swim 400 m without stopping"),
-            "end": ("Endurance", Double(cfg.level) >= Double(peak) * 0.8 ? "Hold \(Fmt.dist(peak)) non-stop and sharpen" : "Build to \(Fmt.dist(peak)) non-stop"),
+            "end": ("Endurance", Double(cfg.level) >= Double(peak) * 0.8 ? "Hold \(Fmt.dist(peak)) non-stop and sharpen" : "Build to \(Fmt.dist(min(peak, finalLong))) non-stop"),
             "taper": ("Taper", "Rest up and race")
         ]
         let phases: [Phase] = codes.enumerated().map { i, c in
@@ -494,6 +656,7 @@ enum PlanEngine {
         }
         let growth = tn > 1 ? pow(Double(peak) / a0, 1 / Double(tn - 1)) - 1 : 0
         return Plan(config: cfg, start: start, begin: begin, race: race, weeks: planWeeks, phases: phases,
-                    milestones: milestones, sessions: all, startLong: Int(a0), growth: growth)
+                    milestones: milestones, sessions: all, startLong: Int(a0), growth: growth,
+                    finalLong: finalLong, rebases: rebases)
     }
 }

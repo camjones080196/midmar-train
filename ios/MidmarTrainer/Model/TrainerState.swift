@@ -49,6 +49,8 @@ struct TrainerState: Codable {
     var links: [String: String] = [:]
     /// Health workouts the swimmer chose not to count
     var ignored: Set<String> = []
+    /// Changes the coach made to the plan, by the week they start
+    var adapt: [Rebase] = []
 
     init() {}
 
@@ -63,6 +65,7 @@ struct TrainerState: Codable {
         nonstop = try c.decodeIfPresent([NonStopSwim].self, forKey: .nonstop) ?? []
         links = try c.decodeIfPresent([String: String].self, forKey: .links) ?? [:]
         ignored = try c.decodeIfPresent(Set<String>.self, forKey: .ignored) ?? []
+        adapt = try c.decodeIfPresent([Rebase].self, forKey: .adapt) ?? []
     }
 
     /// True once the swimmer has changed anything, which freezes the plan's start date.

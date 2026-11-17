@@ -63,11 +63,13 @@ enum StepKind: String, Codable, CaseIterable {
 }
 
 enum SessionType: String, Codable, CaseIterable {
-    case tech, build, thr, pyr, speed, easy, long, tt, race
+    case tech, skills, strength, build, thr, pyr, speed, easy, long, tt, race
 
     var name: String {
         switch self {
         case .tech: "Technique"
+        case .skills: "Open-water skills"
+        case .strength: "Strength"
         case .build: "Intervals"
         case .thr: "Threshold"
         case .pyr: "Pyramid"
@@ -82,6 +84,8 @@ enum SessionType: String, Codable, CaseIterable {
     var why: String {
         switch self {
         case .tech: "Smooth technique makes every metre cheaper. Swim these slowly and think about one thing at a time."
+        case .skills: "The race is in a dam with no walls, lane lines or black line. These sets practise the skills that save the most time out there: sighting, turning without a wall, and starting from the water."
+        case .strength: "Kick and pull sets build the strength in your arms and legs separately, so your stroke holds together late in the Mile."
         case .build: "Short repeats with rest let you cover more distance than you could non-stop. That builds your base."
         case .thr: "Threshold reps teach you to hold a strong pace without fading. Swim every rep at the same speed."
         case .pyr: "A pyramid mixes distances so you practise pacing. Start controlled and keep the long middle swim steady."

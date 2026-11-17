@@ -27,6 +27,7 @@ final class PlanEngineTests: XCTestCase {
                     for s in plan.sessions where !s.isRace {
                         XCTAssertEqual(s.metres % pool, 0, "\(s.title) on \(s.key) is \(s.metres) m in a \(pool) m pool")
                         XCTAssertTrue(s.steps.contains { $0.kind == .main }, "\(s.title) has a main set")
+                        XCTAssertGreaterThanOrEqual(s.metres, PlanEngine.minimumSession, "\(s.title) on \(s.key) is only \(s.metres) m")
                     }
                     XCTAssertEqual(Set(plan.sessions.map(\.key)).count, plan.sessions.count, "no two swims on one day")
                 }
@@ -276,6 +277,74 @@ final class SwimMatchingTests: XCTestCase {
         store.link("a", to: nil)
         XCTAssertNil(store.state.done[mon.key])
         XCTAssertTrue(store.state.ignored.contains("a"))
+    }
+
+    func testWorkoutVariety() {
+        var c = PlanConfig(); c.start = "2026-11-16"; c.race = "2027-02-13"; c.level = 200; c.setup = true
+        let titles = Set(PlanEngine.build(c).sessions.map(\.title))
+        for t in ["Broken mile", "Open-water skills", "Negative splits", "Fast-start practice", "Kick and pull", "Long swim", "Time trial", "Technique"] {
+            XCTAssertTrue(titles.contains(t), "plan has \(t): \(titles.sorted())")
+        }
+        XCTAssertGreaterThanOrEqual(titles.count, 12)
+    }
+
+    private func coachStore(today: String) -> TrainerStore {
+        let store = TrainerStore(fileURL: nil, now: { Days.date(today)! })
+        var c = store.state.config
+        c.start = "2026-11-16"; c.race = "2027-02-13"; c.level = 200
+        store.applyConfig(c, trial: nil)
+        return store
+    }
+
+    func testCoachRaisesAfterALongNonStopSwim() {
+        let store = coachStore(today: "2026-11-25")
+        let before = store.plan.weeks[2].long
+        let week0 = store.plan.weeks[0].sessions.map(\.metres)
+        store.addNonStop(metres: 1200, date: Days.date("2026-11-24")!, openWater: false)
+        let r = store.state.adapt.first
+        XCTAssertEqual(r?.week, 2, "changes start next week")
+        XCTAssertEqual(store.plan.weeks[2].long, 1200)
+        XCTAssertGreaterThan(store.plan.weeks[2].long, before)
+        XCTAssertEqual(store.plan.weeks[0].sessions.map(\.metres), week0, "past weeks do not change")
+        XCTAssertNotNil(store.latestAdjustment)
+        XCTAssertGreaterThanOrEqual(store.plan.weeks[store.plan.buildWeeks - 1].long, 2000, "still reaches the peak")
+    }
+
+    func testCoachEasesAfterHardSwims() {
+        let store = coachStore(today: "2026-11-27")
+        for s in store.sessions.filter({ $0.at <= Days.date("2026-11-27")! }) {
+            store.markDone(s.key, feel: 4, time: 0, trialSeconds: nil, nonStop: false, openWater: false)
+        }
+        let r = store.state.adapt.first { $0.week == 2 }
+        XCTAssertEqual(r?.scale, 0.9)
+        XCTAssertTrue(r?.reason.contains("hard") ?? false)
+    }
+
+    func testCoachEasesBackInAfterTimeOff() {
+        let store = coachStore(today: "2026-12-07")
+        let r = store.state.adapt.first { $0.week == 4 }
+        XCTAssertNotNil(r)
+        XCTAssertEqual(r?.scale, 0.85)
+        XCTAssertTrue(r?.reason.contains("days since") ?? false)
+    }
+
+    func testCoachLeavesAnOnTrackPlanAlone() {
+        let store = coachStore(today: "2026-11-27")
+        for s in store.sessions.filter({ $0.at <= Days.date("2026-11-27")! }) {
+            store.markDone(s.key, feel: 3, time: 0, trialSeconds: nil, nonStop: false, openWater: false)
+        }
+        XCTAssertTrue(store.state.adapt.isEmpty, "\(store.state.adapt)")
+        XCTAssertNil(store.latestAdjustment)
+    }
+
+    func testReplanClearsCoachChanges() {
+        let store = coachStore(today: "2026-11-25")
+        store.addNonStop(metres: 1200, date: Days.date("2026-11-24")!, openWater: false)
+        XCTAssertFalse(store.state.adapt.isEmpty)
+        var c = store.state.config
+        c.level = 1000
+        store.applyConfig(c, trial: nil)
+        XCTAssertFalse(store.state.adapt.contains { $0.reason.contains("non-stop") && $0.long == 1200 && $0.week == 2 } && store.plan.weeks[2].long != 1200)
     }
 
     func testFreshPlanStartsToday() {

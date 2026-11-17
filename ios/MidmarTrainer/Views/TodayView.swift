@@ -13,6 +13,8 @@ struct TodayView: View {
                 CountdownHeader()
                 LaneRope()
                 nudges
+                if let adj = store.latestAdjustment { AdjustmentCard(change: adj) }
+                if let w = store.plan.warning { Card { Text("Behind the build").font(.display(22)); Text(w).foregroundStyle(Palette.muted) } }
                 if !store.unmatchedSwims.isEmpty { UnmatchedSwimsCard() }
                 NextSwimCard()
                 WeekSection(index: shown, onStep: { week = min(store.plan.weekCount - 1, max(0, shown + $0)) })
@@ -272,5 +274,25 @@ struct UnmatchedSwimsCard: View {
                 .padding(.vertical, 4)
             }
         }
+    }
+}
+
+/// Tells the swimmer what the coach changed and why.
+struct AdjustmentCard: View {
+    @Environment(TrainerStore.self) private var store
+    let change: Rebase
+
+    var body: some View {
+        let w = store.plan.weeks[min(change.week, store.plan.weekCount - 1)]
+        Card {
+            HStack(spacing: 8) {
+                Image(systemName: "arrow.triangle.2.circlepath").foregroundStyle(Palette.water)
+                Eyebrow(text: "Plan adjusted · from week \(change.week + 1)", color: Palette.water)
+            }
+            Text(change.reason)
+            Text("Week \(change.week + 1)'s long swim is now \(Fmt.dist(w.long)), and the weeks after build from there to reach your longest swim before the taper.")
+                .font(.system(size: 14)).foregroundStyle(Palette.muted)
+        }
+        .overlay(RoundedRectangle(cornerRadius: 14).stroke(Palette.water))
     }
 }
