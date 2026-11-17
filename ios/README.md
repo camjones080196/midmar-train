@@ -17,7 +17,11 @@ A native SwiftUI version of the Midmar Mile trainer. It builds the same coached 
 3. Plug in your iPhone (iOS 18 or later), choose it as the run destination, and press Run.
 4. On the phone, allow Apple Health access when asked, then open Setup.
 
-With a free Apple ID the app stops opening after 7 days. Run it again from Xcode to renew it. Your data stays on the phone between installs.
+With a free Apple ID the app stops opening after 7 days. `Tools/install-auto-reinstall.sh` sets up a background job on your Mac that rebuilds the app and reinstalls it over Wi-Fi before that happens, and installs new versions when the code changes. Your data stays on the phone between installs.
+
+- `bash Tools/reinstall-midmar.sh --status` shows when the copy on the phone runs out
+- `bash Tools/reinstall-midmar.sh --now` renews it straight away
+- `bash Tools/install-auto-reinstall.sh --off` turns the job off
 
 ## Tests
 
