@@ -198,6 +198,25 @@ final class SwimMatchingTests: XCTestCase {
         XCTAssertNotEqual(store.watchToken, tokenAfterSkip, "an edit resends that swim")
     }
 
+    func testEditingAFinishedSwim() {
+        let store = TrainerStore(fileURL: nil, now: { Days.date("2026-11-20")! })
+        var c = store.state.config
+        c.start = "2026-11-16"; c.race = "2027-02-13"
+        store.applyConfig(c, trial: nil)
+        let s = store.sessions[0]
+        store.markDone(s.key, feel: 3, time: 1800, trialSeconds: nil, nonStop: false, openWater: false)
+        XCTAssertEqual(store.swumMetres(week: 0), s.metres)
+        store.updateResult(s.key, feel: 4, time: 1700, date: Days.date("2026-11-17")!, distance: 600)
+        XCTAssertEqual(store.state.done[s.key]?.date, "2026-11-17")
+        XCTAssertEqual(store.state.done[s.key]?.feel, 4)
+        XCTAssertEqual(store.swumMetres(week: 0), 600)
+        store.saveEdit(s.key, steps: [SetStep(.main, 3, 100, .easy, rest: 20)])
+        XCTAssertEqual(store.session(s.key)?.metres, 300)
+        XCTAssertTrue(store.isDone(s.key), "editing sets keeps the swim done")
+        store.updateResult(s.key, feel: 4, time: 1700, date: Days.date("2026-11-17")!, distance: nil)
+        XCTAssertEqual(store.swumMetres(week: 0), 300, "as planned follows the edited sets")
+    }
+
     func testFreshPlanStartsToday() {
         let store = TrainerStore(fileURL: nil, now: { Days.date("2026-11-19")! })
         XCTAssertEqual(store.state.config.start, "2026-11-19")

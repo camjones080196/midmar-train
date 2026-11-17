@@ -8,7 +8,7 @@ struct ProgressTab: View {
 
     var body: some View {
         let done = store.sessions.filter { store.isDone($0.key) }
-        let metres = done.reduce(0) { $0 + $1.metres }
+        let metres = done.reduce(0) { $0 + store.swum($1) }
         let best = store.state.bestNonStop
         ScrollView {
             VStack(alignment: .leading, spacing: 14) {

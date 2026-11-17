@@ -47,7 +47,7 @@ struct SessionDetailView: View {
                 if s.edited { Text("You edited this swim. Use Edit swim to change it again or go back to the planned sets.").font(.system(size: 14)).foregroundStyle(Palette.muted) }
 
                 if let done {
-                    ResultCard(session: s, record: done, onEdit: { showFinish = true })
+                    ResultCard(session: s, record: done, onEdit: { showFinish = true }, onEditSets: { showEdit = true })
                 } else if store.isSkipped(s.key) {
                     Card {
                         Text("You skipped this swim. It does not count as missed.").foregroundStyle(Palette.muted)
@@ -172,10 +172,15 @@ struct ResultCard: View {
     let session: Session
     let record: DoneRecord
     let onEdit: () -> Void
+    let onEditSets: () -> Void
 
     var body: some View {
         Card {
-            if record.time > 0 { Text(Fmt.time(Double(record.time))).font(.display(32)).monospacedDigit() }
+            HStack(alignment: .firstTextBaseline, spacing: 12) {
+                if record.time > 0 { Text(Fmt.time(Double(record.time))).font(.display(32)).monospacedDigit() }
+                Text("\(Fmt.num(store.swum(session))) m").font(.display(record.time > 0 ? 22 : 32)).monospacedDigit()
+                    .foregroundStyle(record.time > 0 ? Palette.muted : Palette.ink)
+            }
             Text(summary).foregroundStyle(Palette.muted)
             if let sw = store.swim(for: session.key) {
                 Text("Apple Watch: \(Fmt.num(sw.metres)) m \(sw.openWater ? "open water" : "pool")\(sw.pacePer100.map { ", \(Fmt.time($0)) per 100 m with rests" } ?? "")")
@@ -194,12 +199,12 @@ struct ResultCard: View {
                     }
                 }
             }
-            HStack {
-                Button("Edit result", action: onEdit)
-                Spacer()
-                Button("Mark as not done") { store.undo(session.key) }
+            HStack(spacing: 10) {
+                Button("Edit result", action: onEdit).buttonStyle(GhostButtonStyle())
+                Button("Edit sets", action: onEditSets).buttonStyle(GhostButtonStyle())
             }
-            .font(.system(size: 15)).foregroundStyle(Palette.muted)
+            Button("Mark as not done") { store.undo(session.key) }
+                .font(.system(size: 15)).foregroundStyle(Palette.muted).frame(maxWidth: .infinity)
         }
         .overlay(RoundedRectangle(cornerRadius: 14).stroke(Palette.water))
     }
@@ -221,6 +226,9 @@ struct FinishSheet: View {
     @State private var trial = ""
     @State private var nonStop = true
     @State private var openWater = false
+    @State private var swumOn = Date()
+    @State private var asPlanned = true
+    @State private var distance = 0
     @State private var error: String?
 
     private var existing: DoneRecord? { store.state.done[session.key] }
@@ -248,6 +256,17 @@ struct FinishSheet: View {
                         Toggle("It was in open water", isOn: $openWater)
                     }
                 }
+                if existing != nil {
+                    Section {
+                        DatePicker("Swum on", selection: $swumOn, in: ...Date(), displayedComponents: .date)
+                        Toggle("Swam it as planned (\(Fmt.num(session.metres)) m)", isOn: $asPlanned)
+                        if !asPlanned {
+                            Stepper("Distance: \(Fmt.num(distance)) m", value: $distance, in: 0...10000, step: store.plan.pool)
+                        }
+                    } footer: {
+                        Text("To change the sets themselves, use Edit sets on the workout.")
+                    }
+                }
                 if let error { Text(error).foregroundStyle(Palette.buoy) }
             }
             .navigationTitle(existing == nil ? "Mark as done" : "Edit result")
@@ -260,6 +279,9 @@ struct FinishSheet: View {
                 if let existing {
                     feel = max(1, existing.feel == 0 ? 3 : existing.feel)
                     time = existing.time > 0 ? Fmt.time(Double(existing.time)) : ""
+                    swumOn = Days.date(existing.date) ?? Date()
+                    asPlanned = existing.distance == nil || existing.distance == session.metres
+                    distance = existing.distance ?? session.metres
                 }
             }
         }
@@ -284,7 +306,8 @@ struct FinishSheet: View {
             secs = v
         }
         if existing != nil {
-            store.updateResult(session.key, feel: feel, time: secs > 0 ? secs : existing!.time)
+            store.updateResult(session.key, feel: feel, time: time.trimmingCharacters(in: .whitespaces).isEmpty ? 0 : secs,
+                               date: swumOn, distance: asPlanned ? nil : distance)
         } else {
             store.markDone(session.key, feel: feel, time: secs, trialSeconds: trialSecs, nonStop: session.cont != nil && nonStop, openWater: openWater)
         }

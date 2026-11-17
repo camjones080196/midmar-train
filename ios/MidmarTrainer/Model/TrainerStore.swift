@@ -47,7 +47,12 @@ final class TrainerStore {
     func isMissed(_ s: Session) -> Bool { !isDone(s.key) && !isSkipped(s.key) && s.at < today }
 
     func plannedMetres(week i: Int) -> Int { sessions(inWeek: i).filter { !isSkipped($0.key) }.reduce(0) { $0 + $1.metres } }
-    func swumMetres(week i: Int) -> Int { sessions(inWeek: i).filter { isDone($0.key) }.reduce(0) { $0 + $1.metres } }
+    func swumMetres(week i: Int) -> Int { sessions(inWeek: i).reduce(0) { $0 + swum($1) } }
+    /// Metres actually swum for a session: the recorded distance if there is one, otherwise the plan.
+    func swum(_ s: Session) -> Int {
+        guard let r = state.done[s.key] else { return 0 }
+        return r.distance ?? s.metres
+    }
 
     /// Today's swim if it is still to do, otherwise the next one.
     func nextUp() -> (session: Session, label: String)? {
@@ -103,10 +108,13 @@ final class TrainerStore {
         }
     }
 
-    func updateResult(_ key: String, feel: Int, time: Int) {
+    /// Changes a finished swim's result. Distance nil means "as planned".
+    func updateResult(_ key: String, feel: Int, time: Int, date: Date, distance: Int?) {
         update { st in
             st.done[key]?.feel = feel
             st.done[key]?.time = time
+            st.done[key]?.date = Days.key(date)
+            st.done[key]?.distance = distance
         }
     }
 
